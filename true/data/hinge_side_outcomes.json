@@ -1,0 +1,243 @@
+{
+  "provenance": {
+    "derived_from": "copy/app/src/pd_runner/eval/sprime_floors.py (HINGE_SIDE_PAIRS)",
+    "source_sha256": "eeb55a560a2ccd3553f033fd3cbffa94e0061a996c9d12d0612615ea3a11fc1a",
+    "note": "Typed by hand in the original code from the Lean dich_ statements (arith/, not available); NOT machine-checked against Lean here. Kept: the 18 dichotomies of full_transparency_outcome_table.json. Pairs are read from left_bot's side; floor_side repeats the table's value."
+  },
+  "hinge_cells": [
+    {
+      "dichotomy": "dich_CIMCIC_vs_CupodBot",
+      "left_bot": "CIMCIC",
+      "right_bot": "CupodBot",
+      "floor_side": [
+        "D",
+        "C"
+      ],
+      "hinge_side": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "dichotomy": "dich_CIMCIC_vs_CupodTrollBot",
+      "left_bot": "CIMCIC",
+      "right_bot": "CupodTrollBot",
+      "floor_side": [
+        "D",
+        "C"
+      ],
+      "hinge_side": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "dichotomy": "dich_CIMCIC_vs_DBot",
+      "left_bot": "CIMCIC",
+      "right_bot": "DBot",
+      "floor_side": [
+        "D",
+        "C"
+      ],
+      "hinge_side": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "dichotomy": "dich_CIMCIC_vs_EBot",
+      "left_bot": "CIMCIC",
+      "right_bot": "EBot",
+      "floor_side": [
+        "D",
+        "C"
+      ],
+      "hinge_side": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "dichotomy": "dich_CIMCIC_vs_PrudentBot",
+      "left_bot": "CIMCIC",
+      "right_bot": "PrudentBot",
+      "floor_side": [
+        "D",
+        "D"
+      ],
+      "hinge_side": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "dichotomy": "dich_CupodBot_vs_OBot",
+      "left_bot": "CupodBot",
+      "right_bot": "OBot",
+      "floor_side": [
+        "C",
+        "D"
+      ],
+      "hinge_side": [
+        "D",
+        "D"
+      ]
+    },
+    {
+      "dichotomy": "dich_CupodBot_vs_PrudentBot",
+      "left_bot": "CupodBot",
+      "right_bot": "PrudentBot",
+      "floor_side": [
+        "C",
+        "D"
+      ],
+      "hinge_side": [
+        "D",
+        "D"
+      ]
+    },
+    {
+      "dichotomy": "dich_DIMDID_vs_CIMCIC",
+      "left_bot": "DIMDID",
+      "right_bot": "CIMCIC",
+      "floor_side": [
+        "C",
+        "D"
+      ],
+      "hinge_side": [
+        "D",
+        "D"
+      ]
+    },
+    {
+      "dichotomy": "dich_DIMDID_vs_DupocBot",
+      "left_bot": "DIMDID",
+      "right_bot": "DupocBot",
+      "floor_side": [
+        "C",
+        "D"
+      ],
+      "hinge_side": [
+        "D",
+        "D"
+      ]
+    },
+    {
+      "dichotomy": "dich_DIMDID_vs_PrudentBot",
+      "left_bot": "DIMDID",
+      "right_bot": "PrudentBot",
+      "floor_side": [
+        "C",
+        "D"
+      ],
+      "hinge_side": [
+        "D",
+        "D"
+      ]
+    },
+    {
+      "dichotomy": "dich_DupocBot_vs_CupodTrollBot",
+      "left_bot": "DupocBot",
+      "right_bot": "CupodTrollBot",
+      "floor_side": [
+        "D",
+        "C"
+      ],
+      "hinge_side": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "dichotomy": "dich_DupocBot_vs_DBot",
+      "left_bot": "DupocBot",
+      "right_bot": "DBot",
+      "floor_side": [
+        "D",
+        "C"
+      ],
+      "hinge_side": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "dichotomy": "dich_DupocBot_vs_EBot",
+      "left_bot": "DupocBot",
+      "right_bot": "EBot",
+      "floor_side": [
+        "D",
+        "C"
+      ],
+      "hinge_side": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "dichotomy": "dich_DupocTrollBot_vs_CIMCIC",
+      "left_bot": "DupocTrollBot",
+      "right_bot": "CIMCIC",
+      "floor_side": [
+        "C",
+        "D"
+      ],
+      "hinge_side": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "dichotomy": "dich_PrudentBot_vs_CupodBot",
+      "left_bot": "PrudentBot",
+      "right_bot": "CupodBot",
+      "floor_side": [
+        "D",
+        "C"
+      ],
+      "hinge_side": [
+        "D",
+        "D"
+      ]
+    },
+    {
+      "dichotomy": "dich_PrudentBot_vs_DupocBot",
+      "left_bot": "PrudentBot",
+      "right_bot": "DupocBot",
+      "floor_side": [
+        "D",
+        "D"
+      ],
+      "hinge_side": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "dichotomy": "dich_PrudentBot_vs_EBot",
+      "left_bot": "PrudentBot",
+      "right_bot": "EBot",
+      "floor_side": [
+        "D",
+        "C"
+      ],
+      "hinge_side": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "dichotomy": "dich_PrudentBot_vs_PrudentBot",
+      "left_bot": "PrudentBot",
+      "right_bot": "PrudentBot",
+      "floor_side": [
+        "D",
+        "D"
+      ],
+      "hinge_side": [
+        "C",
+        "C"
+      ]
+    }
+  ]
+}

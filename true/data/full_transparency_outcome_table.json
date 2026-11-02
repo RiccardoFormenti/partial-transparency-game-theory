@@ -1,0 +1,1681 @@
+{
+  "system": "sprime",
+  "schema_version": 1,
+  "provenance": {
+    "derived_from": "copy/app/generated/sprime_outcome_theorems.json",
+    "source_sha256": "ee201979d5b1d6eb43fc1b1182947e5cde4cb80d81ff28c341e3cd12fd7c498d",
+    "source_digest": "11855845240862148168",
+    "excluded_bots": [
+      "MirrorBot",
+      "WaryBot",
+      "GuardianBot",
+      "JustBot"
+    ],
+    "dropped_fields": [
+      "staggered",
+      "fuel_pad"
+    ],
+    "note": "source_digest is the Lean export's digest of the ORIGINAL file; it does not validate this derived file."
+  },
+  "theorems": [
+    {
+      "right_bot": "CIMCIC",
+      "right": "CIMCIC k",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_CIMCIC_vs_CIMCIC",
+      "module": "ArithS.Outcome.Matrix.CIMCIC",
+      "left_bot": "CIMCIC",
+      "left": "CIMCIC k",
+      "file": "CIMCIC.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CooperateBot",
+      "right": "CooperateBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_CIMCIC_vs_CooperateBot",
+      "module": "ArithS.Outcome.Matrix.CIMCIC",
+      "left_bot": "CIMCIC",
+      "left": "CIMCIC k",
+      "file": "CIMCIC.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DIMCID",
+      "right": "DIMCID k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_CIMCIC_vs_DIMCID",
+      "module": "ArithS.Outcome.Matrix.CIMCIC",
+      "left_bot": "CIMCIC",
+      "left": "CIMCIC k",
+      "file": "CIMCIC.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_CIMCIC_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.CIMCIC",
+      "left_bot": "CIMCIC",
+      "left": "CIMCIC k",
+      "file": "CIMCIC.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DupocBot",
+      "right": "DupocBot k",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_CIMCIC_vs_DupocBot",
+      "module": "ArithS.Outcome.Matrix.CIMCIC",
+      "left_bot": "CIMCIC",
+      "left": "CIMCIC k",
+      "file": "CIMCIC.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "OBot",
+      "right": "OBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_CIMCIC_vs_OBot",
+      "module": "ArithS.Outcome.Matrix.CIMCIC",
+      "left_bot": "CIMCIC",
+      "left": "CIMCIC k",
+      "file": "CIMCIC.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "TitForTatBot",
+      "right": "TitForTatBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_CIMCIC_vs_TitForTatBot",
+      "module": "ArithS.Outcome.Matrix.CIMCIC",
+      "left_bot": "CIMCIC",
+      "left": "CIMCIC k",
+      "file": "CIMCIC.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CooperateBot",
+      "right": "CooperateBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_CooperateBot_vs_CooperateBot",
+      "module": "ArithS.Outcome.Matrix.CooperateBot",
+      "left_bot": "CooperateBot",
+      "left": "CooperateBot",
+      "file": "CooperateBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_CooperateBot_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.CooperateBot",
+      "left_bot": "CooperateBot",
+      "left": "CooperateBot",
+      "file": "CooperateBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "CooperateBot",
+      "right": "CooperateBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_CupodBot_vs_CooperateBot",
+      "module": "ArithS.Outcome.Matrix.CupodBot",
+      "left_bot": "CupodBot",
+      "left": "CupodBot k",
+      "file": "CupodBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "CupodBot",
+      "right": "CupodBot k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_CupodBot_vs_CupodBot",
+      "module": "ArithS.Outcome.Matrix.CupodBot",
+      "left_bot": "CupodBot",
+      "left": "CupodBot k",
+      "file": "CupodBot.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DBot",
+      "right": "DBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_CupodBot_vs_DBot",
+      "module": "ArithS.Outcome.Matrix.CupodBot",
+      "left_bot": "CupodBot",
+      "left": "CupodBot k",
+      "file": "CupodBot.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_CupodBot_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.CupodBot",
+      "left_bot": "CupodBot",
+      "left": "CupodBot k",
+      "file": "CupodBot.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "EBot",
+      "right": "EBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_CupodBot_vs_EBot",
+      "module": "ArithS.Outcome.Matrix.CupodBot",
+      "left_bot": "CupodBot",
+      "left": "CupodBot k",
+      "file": "CupodBot.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "TitForTatBot",
+      "right": "TitForTatBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_CupodBot_vs_TitForTatBot",
+      "module": "ArithS.Outcome.Matrix.CupodBot",
+      "left_bot": "CupodBot",
+      "left": "CupodBot k",
+      "file": "CupodBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "CooperateBot",
+      "right": "CooperateBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_CupodTrollBot_vs_CooperateBot",
+      "module": "ArithS.Outcome.Matrix.CupodTrollBot",
+      "left_bot": "CupodTrollBot",
+      "left": "CupodTrollBot k",
+      "file": "CupodTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "CupodBot",
+      "right": "CupodBot k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_CupodTrollBot_vs_CupodBot",
+      "module": "ArithS.Outcome.Matrix.CupodTrollBot",
+      "left_bot": "CupodTrollBot",
+      "left": "CupodTrollBot k",
+      "file": "CupodTrollBot.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CupodTrollBot",
+      "right": "CupodTrollBot k",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_CupodTrollBot_vs_CupodTrollBot",
+      "module": "ArithS.Outcome.Matrix.CupodTrollBot",
+      "left_bot": "CupodTrollBot",
+      "left": "CupodTrollBot k",
+      "file": "CupodTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DBot",
+      "right": "DBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_CupodTrollBot_vs_DBot",
+      "module": "ArithS.Outcome.Matrix.CupodTrollBot",
+      "left_bot": "CupodTrollBot",
+      "left": "CupodTrollBot k",
+      "file": "CupodTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_CupodTrollBot_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.CupodTrollBot",
+      "left_bot": "CupodTrollBot",
+      "left": "CupodTrollBot k",
+      "file": "CupodTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "EBot",
+      "right": "EBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_CupodTrollBot_vs_EBot",
+      "module": "ArithS.Outcome.Matrix.CupodTrollBot",
+      "left_bot": "CupodTrollBot",
+      "left": "CupodTrollBot k",
+      "file": "CupodTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "OBot",
+      "right": "OBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_CupodTrollBot_vs_OBot",
+      "module": "ArithS.Outcome.Matrix.CupodTrollBot",
+      "left_bot": "CupodTrollBot",
+      "left": "CupodTrollBot k",
+      "file": "CupodTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "TitForTatBot",
+      "right": "TitForTatBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_CupodTrollBot_vs_TitForTatBot",
+      "module": "ArithS.Outcome.Matrix.CupodTrollBot",
+      "left_bot": "CupodTrollBot",
+      "left": "CupodTrollBot k",
+      "file": "CupodTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "CooperateBot",
+      "right": "CooperateBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_DBot_vs_CooperateBot",
+      "module": "ArithS.Outcome.Matrix.DBot",
+      "left_bot": "DBot",
+      "left": "DBot",
+      "file": "DBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "DBot",
+      "right": "DBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DBot_vs_DBot",
+      "module": "ArithS.Outcome.Matrix.DBot",
+      "left_bot": "DBot",
+      "left": "DBot",
+      "file": "DBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_DBot_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.DBot",
+      "left_bot": "DBot",
+      "left": "DBot",
+      "file": "DBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "CooperateBot",
+      "right": "CooperateBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_DIMCID_vs_CooperateBot",
+      "module": "ArithS.Outcome.Matrix.DIMCID",
+      "left_bot": "DIMCID",
+      "left": "DIMCID k",
+      "file": "DIMCID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CupodBot",
+      "right": "CupodBot k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DIMCID_vs_CupodBot",
+      "module": "ArithS.Outcome.Matrix.DIMCID",
+      "left_bot": "DIMCID",
+      "left": "DIMCID k",
+      "file": "DIMCID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CupodTrollBot",
+      "right": "CupodTrollBot k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_DIMCID_vs_CupodTrollBot",
+      "module": "ArithS.Outcome.Matrix.DIMCID",
+      "left_bot": "DIMCID",
+      "left": "DIMCID k",
+      "file": "DIMCID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DBot",
+      "right": "DBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_DIMCID_vs_DBot",
+      "module": "ArithS.Outcome.Matrix.DIMCID",
+      "left_bot": "DIMCID",
+      "left": "DIMCID k",
+      "file": "DIMCID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DIMCID",
+      "right": "DIMCID k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DIMCID_vs_DIMCID",
+      "module": "ArithS.Outcome.Matrix.DIMCID",
+      "left_bot": "DIMCID",
+      "left": "DIMCID k",
+      "file": "DIMCID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DIMCID_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.DIMCID",
+      "left_bot": "DIMCID",
+      "left": "DIMCID k",
+      "file": "DIMCID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DupocBot",
+      "right": "DupocBot k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DIMCID_vs_DupocBot",
+      "module": "ArithS.Outcome.Matrix.DIMCID",
+      "left_bot": "DIMCID",
+      "left": "DIMCID k",
+      "file": "DIMCID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "EBot",
+      "right": "EBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DIMCID_vs_EBot",
+      "module": "ArithS.Outcome.Matrix.DIMCID",
+      "left_bot": "DIMCID",
+      "left": "DIMCID k",
+      "file": "DIMCID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "OBot",
+      "right": "OBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DIMCID_vs_OBot",
+      "module": "ArithS.Outcome.Matrix.DIMCID",
+      "left_bot": "DIMCID",
+      "left": "DIMCID k",
+      "file": "DIMCID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "PrudentBot",
+      "right": "PrudentBot k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DIMCID_vs_PrudentBot",
+      "module": "ArithS.Outcome.Matrix.DIMCID",
+      "left_bot": "DIMCID",
+      "left": "DIMCID k",
+      "file": "DIMCID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "TitForTatBot",
+      "right": "TitForTatBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DIMCID_vs_TitForTatBot",
+      "module": "ArithS.Outcome.Matrix.DIMCID",
+      "left_bot": "DIMCID",
+      "left": "DIMCID k",
+      "file": "DIMCID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CooperateBot",
+      "right": "CooperateBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DIMDID_vs_CooperateBot",
+      "module": "ArithS.Outcome.Matrix.DIMDID",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "file": "DIMDID.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "CupodBot",
+      "right": "CupodBot k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DIMDID_vs_CupodBot",
+      "module": "ArithS.Outcome.Matrix.DIMDID",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "file": "DIMDID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CupodTrollBot",
+      "right": "CupodTrollBot k",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DIMDID_vs_CupodTrollBot",
+      "module": "ArithS.Outcome.Matrix.DIMDID",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "file": "DIMDID.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DBot",
+      "right": "DBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DIMDID_vs_DBot",
+      "module": "ArithS.Outcome.Matrix.DIMDID",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "file": "DIMDID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DIMCID",
+      "right": "DIMCID k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DIMDID_vs_DIMCID",
+      "module": "ArithS.Outcome.Matrix.DIMDID",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "file": "DIMDID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DIMDID",
+      "right": "DIMDID k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DIMDID_vs_DIMDID",
+      "module": "ArithS.Outcome.Matrix.DIMDID",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "file": "DIMDID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DIMDID_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.DIMDID",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "file": "DIMDID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DupocTrollBot",
+      "right": "DupocTrollBot k",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DIMDID_vs_DupocTrollBot",
+      "module": "ArithS.Outcome.Matrix.DIMDID",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "file": "DIMDID.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "EBot",
+      "right": "EBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DIMDID_vs_EBot",
+      "module": "ArithS.Outcome.Matrix.DIMDID",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "file": "DIMDID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "OBot",
+      "right": "OBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DIMDID_vs_OBot",
+      "module": "ArithS.Outcome.Matrix.DIMDID",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "file": "DIMDID.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "TitForTatBot",
+      "right": "TitForTatBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DIMDID_vs_TitForTatBot",
+      "module": "ArithS.Outcome.Matrix.DIMDID",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "file": "DIMDID.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DefectBot_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.DefectBot",
+      "left_bot": "DefectBot",
+      "left": "DefectBot",
+      "file": "DefectBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "CooperateBot",
+      "right": "CooperateBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DupocBot_vs_CooperateBot",
+      "module": "ArithS.Outcome.Matrix.DupocBot",
+      "left_bot": "DupocBot",
+      "left": "DupocBot k",
+      "file": "DupocBot.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CupodBot",
+      "right": "CupodBot k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_DupocBot_vs_CupodBot",
+      "module": "ArithS.Outcome.Matrix.DupocBot",
+      "left_bot": "DupocBot",
+      "left": "DupocBot k",
+      "file": "DupocBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DupocBot_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.DupocBot",
+      "left_bot": "DupocBot",
+      "left": "DupocBot k",
+      "file": "DupocBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DupocBot",
+      "right": "DupocBot k",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DupocBot_vs_DupocBot",
+      "module": "ArithS.Outcome.Matrix.DupocBot",
+      "left_bot": "DupocBot",
+      "left": "DupocBot k",
+      "file": "DupocBot.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "OBot",
+      "right": "OBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DupocBot_vs_OBot",
+      "module": "ArithS.Outcome.Matrix.DupocBot",
+      "left_bot": "DupocBot",
+      "left": "DupocBot k",
+      "file": "DupocBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "TitForTatBot",
+      "right": "TitForTatBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DupocBot_vs_TitForTatBot",
+      "module": "ArithS.Outcome.Matrix.DupocBot",
+      "left_bot": "DupocBot",
+      "left": "DupocBot k",
+      "file": "DupocBot.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CooperateBot",
+      "right": "CooperateBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DupocTrollBot_vs_CooperateBot",
+      "module": "ArithS.Outcome.Matrix.DupocTrollBot",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "file": "DupocTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "CupodBot",
+      "right": "CupodBot k",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DupocTrollBot_vs_CupodBot",
+      "module": "ArithS.Outcome.Matrix.DupocTrollBot",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "file": "DupocTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "CupodTrollBot",
+      "right": "CupodTrollBot k",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DupocTrollBot_vs_CupodTrollBot",
+      "module": "ArithS.Outcome.Matrix.DupocTrollBot",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "file": "DupocTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DBot",
+      "right": "DBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_DupocTrollBot_vs_DBot",
+      "module": "ArithS.Outcome.Matrix.DupocTrollBot",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "file": "DupocTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DIMCID",
+      "right": "DIMCID k",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_DupocTrollBot_vs_DIMCID",
+      "module": "ArithS.Outcome.Matrix.DupocTrollBot",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "file": "DupocTrollBot.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DIMDID",
+      "right": "DIMDID k",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DupocTrollBot_vs_DIMDID",
+      "module": "ArithS.Outcome.Matrix.DupocTrollBot",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "file": "DupocTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_DupocTrollBot_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.DupocTrollBot",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "file": "DupocTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DupocBot",
+      "right": "DupocBot k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_DupocTrollBot_vs_DupocBot",
+      "module": "ArithS.Outcome.Matrix.DupocTrollBot",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "file": "DupocTrollBot.lean",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DupocTrollBot",
+      "right": "DupocTrollBot k",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DupocTrollBot_vs_DupocTrollBot",
+      "module": "ArithS.Outcome.Matrix.DupocTrollBot",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "file": "DupocTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "EBot",
+      "right": "EBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_DupocTrollBot_vs_EBot",
+      "module": "ArithS.Outcome.Matrix.DupocTrollBot",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "file": "DupocTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "OBot",
+      "right": "OBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DupocTrollBot_vs_OBot",
+      "module": "ArithS.Outcome.Matrix.DupocTrollBot",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "file": "DupocTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "PrudentBot",
+      "right": "PrudentBot k",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_DupocTrollBot_vs_PrudentBot",
+      "module": "ArithS.Outcome.Matrix.DupocTrollBot",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "file": "DupocTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "TitForTatBot",
+      "right": "TitForTatBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_DupocTrollBot_vs_TitForTatBot",
+      "module": "ArithS.Outcome.Matrix.DupocTrollBot",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "file": "DupocTrollBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "CooperateBot",
+      "right": "CooperateBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_EBot_vs_CooperateBot",
+      "module": "ArithS.Outcome.Matrix.EBot",
+      "left_bot": "EBot",
+      "left": "EBot",
+      "file": "EBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "DBot",
+      "right": "DBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_EBot_vs_DBot",
+      "module": "ArithS.Outcome.Matrix.EBot",
+      "left_bot": "EBot",
+      "left": "EBot",
+      "file": "EBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_EBot_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.EBot",
+      "left_bot": "EBot",
+      "left": "EBot",
+      "file": "EBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "EBot",
+      "right": "EBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_EBot_vs_EBot",
+      "module": "ArithS.Outcome.Matrix.EBot",
+      "left_bot": "EBot",
+      "left": "EBot",
+      "file": "EBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "OBot",
+      "right": "OBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_EBot_vs_OBot",
+      "module": "ArithS.Outcome.Matrix.EBot",
+      "left_bot": "EBot",
+      "left": "EBot",
+      "file": "EBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "TitForTatBot",
+      "right": "TitForTatBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_EBot_vs_TitForTatBot",
+      "module": "ArithS.Outcome.Matrix.EBot",
+      "left_bot": "EBot",
+      "left": "EBot",
+      "file": "EBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "CooperateBot",
+      "right": "CooperateBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_OBot_vs_CooperateBot",
+      "module": "ArithS.Outcome.Matrix.OBot",
+      "left_bot": "OBot",
+      "left": "OBot",
+      "file": "OBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "DBot",
+      "right": "DBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_OBot_vs_DBot",
+      "module": "ArithS.Outcome.Matrix.OBot",
+      "left_bot": "OBot",
+      "left": "OBot",
+      "file": "OBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_OBot_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.OBot",
+      "left_bot": "OBot",
+      "left": "OBot",
+      "file": "OBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "OBot",
+      "right": "OBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_OBot_vs_OBot",
+      "module": "ArithS.Outcome.Matrix.OBot",
+      "left_bot": "OBot",
+      "left": "OBot",
+      "file": "OBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "TitForTatBot",
+      "right": "TitForTatBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_OBot_vs_TitForTatBot",
+      "module": "ArithS.Outcome.Matrix.OBot",
+      "left_bot": "OBot",
+      "left": "OBot",
+      "file": "OBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "CooperateBot",
+      "right": "CooperateBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_PrudentBot_vs_CooperateBot",
+      "module": "ArithS.Outcome.Matrix.PrudentBot",
+      "left_bot": "PrudentBot",
+      "left": "PrudentBot k",
+      "file": "PrudentBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "CupodTrollBot",
+      "right": "CupodTrollBot k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_PrudentBot_vs_CupodTrollBot",
+      "module": "ArithS.Outcome.Matrix.PrudentBot",
+      "left_bot": "PrudentBot",
+      "left": "PrudentBot k",
+      "file": "PrudentBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DBot",
+      "right": "DBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_PrudentBot_vs_DBot",
+      "module": "ArithS.Outcome.Matrix.PrudentBot",
+      "left_bot": "PrudentBot",
+      "left": "PrudentBot k",
+      "file": "PrudentBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_PrudentBot_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.PrudentBot",
+      "left_bot": "PrudentBot",
+      "left": "PrudentBot k",
+      "file": "PrudentBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "DupocTrollBot",
+      "right": "DupocTrollBot k",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_PrudentBot_vs_DupocTrollBot",
+      "module": "ArithS.Outcome.Matrix.PrudentBot",
+      "left_bot": "PrudentBot",
+      "left": "PrudentBot k",
+      "file": "PrudentBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "OBot",
+      "right": "OBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_PrudentBot_vs_OBot",
+      "module": "ArithS.Outcome.Matrix.PrudentBot",
+      "left_bot": "PrudentBot",
+      "left": "PrudentBot k",
+      "file": "PrudentBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "TitForTatBot",
+      "right": "TitForTatBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_PrudentBot_vs_TitForTatBot",
+      "module": "ArithS.Outcome.Matrix.PrudentBot",
+      "left_bot": "PrudentBot",
+      "left": "PrudentBot k",
+      "file": "PrudentBot.lean",
+      "budget_regime": "universal"
+    },
+    {
+      "right_bot": "CooperateBot",
+      "right": "CooperateBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_TitForTatBot_vs_CooperateBot",
+      "module": "ArithS.Outcome.Matrix.TitForTatBot",
+      "left_bot": "TitForTatBot",
+      "left": "TitForTatBot",
+      "file": "TitForTatBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "DBot",
+      "right": "DBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_TitForTatBot_vs_DBot",
+      "module": "ArithS.Outcome.Matrix.TitForTatBot",
+      "left_bot": "TitForTatBot",
+      "left": "TitForTatBot",
+      "file": "TitForTatBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "DefectBot",
+      "right": "DefectBot",
+      "provenance": "sprime",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_TitForTatBot_vs_DefectBot",
+      "module": "ArithS.Outcome.Matrix.TitForTatBot",
+      "left_bot": "TitForTatBot",
+      "left": "TitForTatBot",
+      "file": "TitForTatBot.lean",
+      "budget_regime": "nobudget"
+    },
+    {
+      "right_bot": "TitForTatBot",
+      "right": "TitForTatBot",
+      "provenance": "sprime",
+      "pair": [
+        "C",
+        "C"
+      ],
+      "name": "outcome_TitForTatBot_vs_TitForTatBot",
+      "module": "ArithS.Outcome.Matrix.TitForTatBot",
+      "left_bot": "TitForTatBot",
+      "left": "TitForTatBot",
+      "file": "TitForTatBot.lean",
+      "budget_regime": "nobudget"
+    }
+  ],
+  "floors": [
+    {
+      "right_bot": "CupodBot",
+      "right": "CupodBot k",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_CIMCIC_vs_CupodBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "CIMCIC",
+      "left": "CIMCIC k",
+      "hinge": "□[k] (guardCodeB (templateCode phiC) (progCode (CIMCIC k)) (progCode (CupodBot k)) k) ∨ □[k] (guardCodeB (templateCode phiCu) (progCode (CupodBot k)) (progCode (CIMCIC k)) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_CIMCIC_vs_CupodBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CupodTrollBot",
+      "right": "CupodTrollBot k",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_CIMCIC_vs_CupodTrollBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "CIMCIC",
+      "left": "CIMCIC k",
+      "hinge": "□[k] (guardCodeB (templateCode phiC) (progCode (CIMCIC k)) (progCode (CupodTrollBot k)) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_CIMCIC_vs_CupodTrollBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DBot",
+      "right": "DBot",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_CIMCIC_vs_DBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "CIMCIC",
+      "left": "CIMCIC k",
+      "hinge": "□[k] (guardCodeB (templateCode phiC) (progCode (CIMCIC k)) (progCode DBot) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_CIMCIC_vs_DBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "EBot",
+      "right": "EBot",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_CIMCIC_vs_EBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "CIMCIC",
+      "left": "CIMCIC k",
+      "hinge": "□[k] (guardCodeB (templateCode phiC) (progCode (CIMCIC k)) (progCode EBot) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_CIMCIC_vs_EBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "PrudentBot",
+      "right": "PrudentBot k",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_CIMCIC_vs_PrudentBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "CIMCIC",
+      "left": "CIMCIC k",
+      "hinge": "□[k] (guardCodeB (templateCode phiPo) (progCode (PrudentBot k)) (progCode (CIMCIC k)) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_CIMCIC_vs_PrudentBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "OBot",
+      "right": "OBot",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_CupodBot_vs_OBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "CupodBot",
+      "left": "CupodBot k",
+      "hinge": "□[k] (guardCodeB (templateCode phiCu) (progCode (CupodBot k)) (progCode OBot) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_CupodBot_vs_OBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "PrudentBot",
+      "right": "PrudentBot k",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_CupodBot_vs_PrudentBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "CupodBot",
+      "left": "CupodBot k",
+      "hinge": "□[k] (guardCodeB (templateCode phiCu) (progCode (CupodBot k)) (progCode (PrudentBot k)) k) ∨ □[k] (guardCodeB (templateCode phiPo) (progCode (PrudentBot k)) (progCode (CupodBot k)) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_CupodBot_vs_PrudentBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CIMCIC",
+      "right": "CIMCIC k",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_DIMDID_vs_CIMCIC_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "hinge": "□[k] (guardCodeB (templateCode phiDd) (progCode (DIMDID k)) (progCode (CIMCIC k)) k) ∨ □[k] (guardCodeB (templateCode phiC) (progCode (CIMCIC k)) (progCode (DIMDID k)) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_DIMDID_vs_CIMCIC",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DupocBot",
+      "right": "DupocBot k",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_DIMDID_vs_DupocBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "hinge": "□[k] (guardCodeB (templateCode phiDd) (progCode (DIMDID k)) (progCode (DupocBot k)) k) ∨ □[k] (guardCodeB (templateCode phiDu) (progCode (DupocBot k)) (progCode (DIMDID k)) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_DIMDID_vs_DupocBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "PrudentBot",
+      "right": "PrudentBot k",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_DIMDID_vs_PrudentBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "DIMDID",
+      "left": "DIMDID k",
+      "hinge": "□[k] (guardCodeB (templateCode phiDd) (progCode (DIMDID k)) (progCode (PrudentBot k)) k) ∨ □[k] (guardCodeB (templateCode phiPo) (progCode (PrudentBot k)) (progCode (DIMDID k)) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_DIMDID_vs_PrudentBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CupodTrollBot",
+      "right": "CupodTrollBot k",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_DupocBot_vs_CupodTrollBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "DupocBot",
+      "left": "DupocBot k",
+      "hinge": "□[k] (guardCodeB (templateCode phiDu) (progCode (DupocBot k)) (progCode (CupodTrollBot k)) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_DupocBot_vs_CupodTrollBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DBot",
+      "right": "DBot",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_DupocBot_vs_DBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "DupocBot",
+      "left": "DupocBot k",
+      "hinge": "□[k] (guardCodeB (templateCode phiDu) (progCode (DupocBot k)) (progCode DBot) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_DupocBot_vs_DBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "EBot",
+      "right": "EBot",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_DupocBot_vs_EBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "DupocBot",
+      "left": "DupocBot k",
+      "hinge": "□[k] (guardCodeB (templateCode phiDu) (progCode (DupocBot k)) (progCode EBot) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_DupocBot_vs_EBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CIMCIC",
+      "right": "CIMCIC k",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "C",
+        "D"
+      ],
+      "name": "outcome_DupocTrollBot_vs_CIMCIC_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "DupocTrollBot",
+      "left": "DupocTrollBot k",
+      "hinge": "□[k] (guardCodeB (templateCode phiC) (progCode (CIMCIC k)) (progCode (DupocTrollBot k)) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_DupocTrollBot_vs_CIMCIC",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "CupodBot",
+      "right": "CupodBot k",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_PrudentBot_vs_CupodBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "PrudentBot",
+      "left": "PrudentBot k",
+      "hinge": "□[k] (guardCodeB (templateCode phiCu) (progCode (CupodBot k)) (progCode (PrudentBot k)) k) ∨ □[k] (guardCodeB (templateCode phiPo) (progCode (PrudentBot k)) (progCode (CupodBot k)) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_PrudentBot_vs_CupodBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "DupocBot",
+      "right": "DupocBot k",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_PrudentBot_vs_DupocBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "PrudentBot",
+      "left": "PrudentBot k",
+      "hinge": "□[k] (guardCodeB (templateCode phiPo) (progCode (PrudentBot k)) (progCode (DupocBot k)) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_PrudentBot_vs_DupocBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "EBot",
+      "right": "EBot",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "D",
+        "C"
+      ],
+      "name": "outcome_PrudentBot_vs_EBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "PrudentBot",
+      "left": "PrudentBot k",
+      "hinge": "□[k] (guardCodeB (templateCode phiPo) (progCode (PrudentBot k)) (progCode EBot) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_PrudentBot_vs_EBot",
+      "budget_regime": "eventual"
+    },
+    {
+      "right_bot": "PrudentBot",
+      "right": "PrudentBot k",
+      "provenance": "floor_dichotomy",
+      "pair": [
+        "D",
+        "D"
+      ],
+      "name": "outcome_PrudentBot_vs_PrudentBot_floor",
+      "module": "ArithS.Outcome.Floors",
+      "left_bot": "PrudentBot",
+      "left": "PrudentBot k",
+      "hinge": "□[k] (guardCodeB (templateCode phiPo) (progCode (PrudentBot k)) (progCode (PrudentBot k)) k)",
+      "file": "Floors.lean",
+      "dichotomy": "dich_PrudentBot_vs_PrudentBot",
+      "budget_regime": "eventual"
+    }
+  ],
+  "companions": []
+}
