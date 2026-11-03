@@ -1,2 +1,3 @@
-"""Full transparency only: the Nash equilibria of each zoo's game (`nash`).
+"""Full transparency only: the Nash equilibria (`nash`) and the replicator dynamics
+(`replicator`) of each zoo's game.
 """

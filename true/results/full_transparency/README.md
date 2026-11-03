@@ -1,7 +1,10 @@
-# Full-transparency Nash results
+# Full-transparency results
 
-This folder holds the Nash equilibria of each zoo's game at full transparency, as computed by
-`replication/full_transparency/nash.py`. This file explains every entry of every result file.
+This folder holds, for each zoo's game at full transparency, its Nash equilibria (computed by
+`replication/full_transparency/nash.py`) and which of them a population reaches under the
+replicator dynamics (computed by `replication/full_transparency/replicator.py`). This file
+explains every entry of every result file. The Nash files are described first; the replicator
+files are described under [Replicator dynamics](#replicator-dynamics).
 
 ## Layout
 
@@ -12,6 +15,8 @@ full_transparency/
     equilibria.json        the game and all its extreme equilibria and components
     lrsnash_input.txt      the game as given to the solver lrsnash
     lrsnash_output.txt     lrsnash's raw output, which equilibria.json is read from
+    replicator.json        how many starts reach each Nash component, and where in it they end
+    replicator_runs.csv    one row per start of the replicator dynamics
 ```
 
 To compute or recompute, run from `true/`:
@@ -20,11 +25,18 @@ To compute or recompute, run from `true/`:
 conda run -n py-random python -m replication.full_transparency.nash                 # body8, both sides
 conda run -n py-random python -m replication.full_transparency.nash body8+trolls    # one zoo
 conda run -n py-random python -m replication.full_transparency.nash all             # every zoo
+conda run -n py-random python -m replication.full_transparency.replicator           # body8, floor side
 ```
 
-Add `--side floor` or `--side hinge` to compute one side only. A run overwrites the three files
-of that zoo and side. The same data always gives the same files, except the timing line in
-`lrsnash_output.txt`.
+For `nash`, add `--side floor` or `--side hinge` to compute one side only. A run overwrites the
+three files of that zoo and side. The same data always gives the same files, except the timing
+line in `lrsnash_output.txt`.
+
+`replicator` takes the same zoo argument, but computes the floor side only unless given
+`--side hinge`. Run `nash` first: `replicator.json` refers to the components of
+`equilibria.json`, and the run stops if that file is missing or holds other equilibria. A run
+overwrites the two replicator files of that zoo and side. The same data and the same numpy and
+scipy versions always give the same files.
 
 ### Zoos (`<zoo>`)
 
@@ -256,3 +268,179 @@ table this is written as "3 (21)".
 - Its cooperation is 11/18. The `CC` cells among these bots are (Coop, Coop), (Coop, OBot),
   (EBot, EBot) and (OBot, Coop), so
   Pr[(C, C)] = 1/2·1/2 + 1/2·1/3 + 1/6·1/6 + 1/3·1/2 = 11/18.
+
+# Replicator dynamics
+
+The Nash files list every equilibrium. The replicator files say which of them a population of
+bots actually reaches, and from how many starting mixes. The code is
+`replication/general/replicator.py`; its docstring also lists how it differs from the original
+code (`copy/app/src/pd_runner/egt/replicator/`).
+
+## The model and what is computed
+
+- A **population** is a mix x of the bots: xᵢ is the share of `bots[i]`, xᵢ ≥ 0, Σ xᵢ = 1. Each
+  member meets a random member, so a bot of type i expects (Ax)ᵢ and the population's average
+  payoff is xᵀAx.
+- The **replicator dynamics** let a type grow when it beats the average:
+  ẋᵢ = xᵢ · gᵢ(x), with growth rate gᵢ(x) = (Ax)ᵢ − xᵀAx.
+- **Starts:** `n_starts` mixes drawn independently and uniformly on the simplex (a Dirichlet(1)
+  draw). Every bot is present at a start. Starts at a single bot are not used: a population of
+  one bot never changes, since selection cannot bring back an absent bot.
+- **Integration:** each start is followed up to time `horizon` (10⁵; payoffs are of order 1,
+  so this is long). The code integrates the log-shares log xᵢ, whose derivative is gᵢ(x), so
+  shares stay positive and sum to 1 exactly, however small they get.
+- **Convergence:** a start has converged when, at time `horizon`/2 and at time `horizon`, (x, x)
+  is a symmetric Nash equilibrium up to the tolerance ε = `tolerance` (10⁻⁶):
+  - no bot's growth rate exceeds ε, so no bot beats the average;
+  - every bot is **absent** (share < ε) or ties the best (growth rate ≥ −ε);
+  - the absent bots and the tied bots are the same at both times, and no share moved by ε or
+    more between the two times.
+
+  A population that keeps cycling fails this test, even one that slows down near each bot it
+  passes, since there the next bot grows.
+- **Which equilibrium:** if a population that starts with every bot present converges, its
+  limit x gives a symmetric Nash equilibrium (x, x) (the folk theorem of evolutionary game
+  theory). So every converged start ends in exactly one **component** of `equilibria.json`.
+  The code finds it exactly from the end state's absent and tied bots. These pick out a convex
+  set of symmetric equilibria (x′, x′), all in one component. The code then checks that the end
+  state lies within `max_distance` of that set (see `replication/general/replicator.py` for the
+  argument).
+- **Basin of a component:** the share of starts that converge to it. It estimates the share of
+  all starting mixes (by volume) from which the population reaches that component. Starts that
+  have not converged are counted separately and never assigned to a component.
+
+Many components are continua of equilibria, so starts that reach the same component end at
+different mixes, and some bots of the component may be absent at some end states. Grouping end
+states by the bots present would split one component into several groups. That is why the
+results are grouped by component, with the mixes inside each component listed separately.
+
+## Conventions in `replicator.json` and `replicator_runs.csv`
+
+- **Floats:** shares, payoffs and probabilities are floating point, not exact. `replicator.json`
+  rounds them to 9 decimals. `replicator_runs.csv` keeps every digit.
+- **End state:** the population's mix at time `horizon`.
+- **Present:** a bot is present at an end state when its share is at least `tolerance`.
+  A bot whose share is below that is absent: in practice its share is usually far smaller,
+  e.g. 10⁻¹⁰⁰.
+- **Component ids** are those of `equilibria.json` in the same folder.
+- **95% intervals** are Wilson score intervals for a proportion, from k of n independent
+  starts. When k = 0, the upper end is about 3.8/n.
+
+## `replicator.json`
+
+### Top-level entries
+
+| key | type | meaning |
+|---|---|---|
+| `zoo`, `side`, `bots`, `payoffs`, `A` | | As in `equilibria.json`. |
+| `settings` | object | The method's settings (see [below](#entries-of-settings)). |
+| `n_starts` | integer | The number of starts. |
+| `n_converged` | integer | How many of them converged. |
+| `components` | list | One entry per component of `equilibria.json`, in `id` order, including components that no start reaches (see [below](#entries-of-components-1)). |
+| `unconverged` | object | The starts that did not converge (see [below](#entries-of-unconverged)). |
+
+### Entries of `settings`
+
+| key | meaning |
+|---|---|
+| `n_starts` | The number of starts. |
+| `seed` | The seed of numpy's random generator (`numpy.random.default_rng`) that draws the starts. |
+| `horizon` | How long each start is integrated. Convergence is tested at `horizon`/2 and `horizon`. |
+| `tolerance` | ε of the convergence test, and the share below which a bot counts as absent. |
+| `max_distance` | How far (largest difference in any bot's share) a converged end state may lie from a symmetric equilibrium of its component. If any end state lies farther, the run stops with an error. |
+| `integrator` | The ODE solver (scipy's `solve_ivp` with LSODA) and the variables it integrates. |
+| `rtol`, `atol` | The solver's relative and absolute error tolerances, per log-share. |
+
+### Entries of `components`
+
+Every component has these entries:
+
+| key | type | meaning |
+|---|---|---|
+| `id` | integer | The component's `id` in `equilibria.json`. |
+| `bots` | list of strings | The component's `bots` in `equilibria.json`: every bot played in one of its equilibria. |
+| `n_starts` | integer | How many starts converge to it. |
+| `basin` | float | `n_starts` divided by the total number of starts. |
+| `basin_ci95` | [low, high] | The 95% interval for the basin. |
+
+A component that at least one start reaches also has these:
+
+| key | type | meaning |
+|---|---|---|
+| `shares` | `{bot: {"min", "max"}}` | The smallest and largest share of each bot over the end states in this component. Bots that are absent from every one of these end states are not listed. |
+| `supports` | list of `{"bots", "n_starts"}` | The distinct sets of present bots among these end states, and how many end states have each set, most frequent first. |
+| `payoff` | `{"min", "max"}` | The smallest and largest average payoff xᵀAx over these end states. |
+| `cooperation` | `{"min", "max"}` | The smallest and largest Pr[(C, C)] over these end states: the probability that two members drawn independently from x both cooperate, Σᵢⱼ xᵢ xⱼ · [`cells[i][j]` = `CC`]. |
+| `max_distance` | float | The largest distance from one of these end states to a symmetric equilibrium of the component. It is at most `settings.max_distance`. |
+
+### Entries of `unconverged`
+
+| key | type | meaning |
+|---|---|---|
+| `n_starts` | integer | How many starts did not converge by `horizon`. |
+| `share` | float | `n_starts` divided by the total number of starts. |
+| `share_ci95` | [low, high] | Its 95% interval. |
+| `runs` | list of integers | Their row numbers (`run`) in `replicator_runs.csv`. |
+
+## `replicator_runs.csv`
+
+One row per start, in the order they were drawn.
+
+| column | meaning |
+|---|---|
+| `run` | The start's number, from 0. |
+| `converged` | `True` or `False`. |
+| `component` | The `id` of the component it converges to; empty when it did not converge. |
+| `distance` | The end state's distance to a symmetric equilibrium of that component; empty when it did not converge. |
+| `payoff` | The average payoff xᵀAx at the end state. |
+| `cooperation` | Pr[(C, C)] at the end state, as in `components`. |
+| `start:<bot>` | The bot's share at the start, one column per bot in `bots` order. |
+| `end:<bot>` | The bot's share at the end state. |
+
+## What is guaranteed
+
+The code checks the following before writing anything for a zoo and side. If any check fails,
+the run stops with an error and writes neither replicator file.
+
+- `equilibria.json` exists and holds the same bots and equilibria the run computes, so the
+  component ids agree.
+- Every start has every bot present, and the solver reports success for every start.
+- Every converged end state matches the faces of exactly one component, and lies within
+  `max_distance` of a symmetric equilibrium of that component.
+
+`true/checks/check_replicator.py` also checks the code against the original's and against
+textbook games, and checks that every saved `replicator.json` agrees with its
+`equilibria.json`.
+
+## Worked example: `body8/floor`
+
+**Counts:** 1000 starts, all 1000 converged.
+
+**Component 0 (full cooperation) is reached from every start:** basin 1, 95% interval
+[0.996, 1].
+- Every end state has payoff 2 and Pr[(C, C)] = 1.
+- The end states form a continuum. Over them, CooperateBot's share ranges from 0 to 0.658,
+  DupocBot's from 0.170 to 1, and TitForTatBot's from 0 to 0.628. All lie in the region
+  described in the Nash example above: CooperateBot ≤ 2/3 and 2·CooperateBot + 3·TitForTatBot ≤ 2.
+- Their supports are {CooperateBot, DupocBot, TitForTatBot} in 904 starts, {DupocBot,
+  TitForTatBot} in 46, {DupocBot} in 40 and {CooperateBot, DupocBot} in 10. At every end state
+  the three bots tie, so selection no longer changes their shares. A bot whose share fell
+  below 10⁻⁶ on the way stays absent, although nothing outcompetes it at the end.
+- The other five bots have share 0 to machine precision at every end state.
+
+**Components 1 and 2 are reached from no start.** The 95% interval of each basin is
+[0, 0.0038].
+- Component 1 (full defection). At every one of its equilibria, a small DupocBot share grows.
+  Against DefectBot and OBot, DupocBot earns 0, as they do against each other and against
+  DupocBot, and DupocBot earns 2 against itself. So DupocBot beats the average.
+- Component 2 (the isolated mix of CooperateBot, EBot and OBot). Among its own three bots it
+  attracts: the population spirals into it. But DefectBot and DupocBot earn exactly its
+  payoff 3/2 there, so whether it is stable depends on effects beyond the first order. No
+  start ends there.
+
+The original code, with its own 200 starts, reports 11 "attractors" here:
+- one per bot, because it also starts at each single-bot population, which never changes;
+- three more sets of present bots.
+
+Four of the 11 are parts of component 0: {DupocBot} and the three others. The other seven are
+reached from no start that has every bot present.
