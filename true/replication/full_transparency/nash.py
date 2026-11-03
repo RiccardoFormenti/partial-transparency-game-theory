@@ -11,6 +11,7 @@ Each zoo and side writes to results/full_transparency/<zoo>/<side>/:
                       the column bot's.
   lrsnash_input.txt   the game given to lrsnash (A shifted so that the smallest payoff is 1)
   lrsnash_output.txt  lrsnash's output, which the equilibria are read from
+results/full_transparency/README.md describes every entry of these files.
 
 Usage (from true/):
   python -m replication.full_transparency.nash                 body8, both sides
