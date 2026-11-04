@@ -147,9 +147,10 @@ def _shown(r: dict[str, float]) -> str:
 
 
 def solve(zoo: Zoo, cells: dict[tuple[str, str], tuple[str, str]], out: Path,
-          horizon: float = HORIZON, about: dict | None = None) -> dict:
+          horizon: float = HORIZON, about: dict | None = None,
+          n_starts: int = N_STARTS) -> dict:
     """Compute and save to `out` the basins of the game `cells` define over the zoo's bots,
-    integrating each start up to `horizon`.
+    integrating each of `n_starts` starts up to `horizon`.
 
     `out` must hold that game's equilibria.json (`nash.solve`). `about` adds entries to
     replicator.json, after `zoo` and `side`.
@@ -158,7 +159,7 @@ def solve(zoo: Zoo, cells: dict[tuple[str, str], tuple[str, str]], out: Path,
     found = analyse(zoo.bots, cells, A, parse_lrsnash(run_lrsnash(lrsnash_input(A)), len(A)))
     _check_against_nash(out, zoo.bots, found)
 
-    runs = basins(A, found, sample_starts(len(A), N_STARTS, SEED), horizon)
+    runs = basins(A, found, sample_starts(len(A), n_starts, SEED), horizon)
     Af = np.array(A, dtype=float)
     payoff = [float(r.end @ Af @ r.end) for r in runs]
     cooperation = [float(cooperation_rate(zoo.bots, cells, r.end, r.end)) for r in runs]

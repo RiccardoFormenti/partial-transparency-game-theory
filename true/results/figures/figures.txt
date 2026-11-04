@@ -1,0 +1,20 @@
+Figures. figures.py draws them all; each figure is saved here as figure_<X>.pdf and .png.
+
+Data: two sweeps of the (t, α) grid, under results/partial_transparency/. Both use the zoo
+body8 (floor side) and both signal families (behavioral and syntactic). They also share the
+transparency grid t = 0, 0.01, ..., 1. Each grid point's game is solved for its exact Nash
+equilibria and for where the replicator dynamics end, starting from seeded random populations
+(seed 20260514).
+  body8/          α ∈ {0, 0.2, 0.4, 0.5, 0.6, 0.8, 1}, the original paper's cautions.
+                  1000 replicator starts per game.
+  alpha_0.5-1/    α ∈ {0.5, 0.6, 0.7, 0.8, 0.9, 1}, a finer α step of 0.1.
+                  100 replicator starts per game, the first 100 of the 1000 above.
+
+Figure A (figure_A.pdf, figure_A.png)
+  x: transparency t, from 0 to 1.
+  y: maximum equilibrium cooperation, Pr[(C, C)] in the most cooperative equilibrium, averaged
+     over the caution values α ∈ {0.5, 0.6, 0.7, 0.8, 0.9, 1}.
+  The dotted line is the minimum equilibrium cooperation, which is 0 at every t.
+  Every replicator dynamics run converges to the maximum-cooperation equilibrium, at every
+  (t, α) pair. The green band, which the max equilibrium line runs inside, shows this.
+  Data: behavioral family, results/partial_transparency/alpha_0.5-1/.

@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Opus' analysis of the partial-transparency results
+true/results/claude_results/
+
+# Astra's analysis of the partial-transparency results
+true/results/astra_results/

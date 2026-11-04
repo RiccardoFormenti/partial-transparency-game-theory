@@ -44,6 +44,20 @@ same files, except the timing line in `lrsnash_output.txt`.
 `true/checks/check_partial_transparency.py` checks the saved files (see
 [What is guaranteed](#what-is-guaranteed)).
 
+### Other grids
+
+`--alphas <α> ...` runs other cautions, `--starts <n>` another number of replicator starts per
+game (the first n of the same 1000 seeded draws), and `--subset <name>` saves to
+`partial_transparency/<name>/body8/floor/<family>/`, leaving the default grid in place. The files
+are the same as here. The check script checks only the default grid.
+
+- **`alpha_0.5-1/`**: α ∈ {0.5, 0.6, 0.7, 0.8, 0.9, 1}, the same t grid, 100 starts per game:
+
+  ```bash
+  conda run -n py-random python -m replication.partial_transparency.grid \
+      --alphas 0.5 0.6 0.7 0.8 0.9 1 --starts 100 --subset alpha_0.5-1
+  ```
+
 ## The grid
 
 - **Transparency** t runs from 1 to 0 in steps of 0.01: 101 values. Each is rounded to 10

@@ -45,7 +45,12 @@ Usage (from true/):
   python -m replication.partial_transparency.grid                       both families
   python -m replication.partial_transparency.grid --family behavioral   one family
 Add --t-step <step> for another t step (it must divide 1), and --horizon <time> for another
-first horizon than 1e5.
+first horizon than 1e5. --alphas <α> ... runs other α than the original's, --starts <n> another
+number of replicator starts than 1000 (the first n of the same seed's draws), and
+--subset <name> writes to results/partial_transparency/<name>/body8/floor/<family>/ instead, so
+that another grid leaves the default one in place:
+  python -m replication.partial_transparency.grid --alphas 0.5 0.6 0.7 0.8 0.9 1 --starts 100 \\
+      --subset alpha_0.5-1
 """
 
 from __future__ import annotations
@@ -120,11 +125,11 @@ def _games(bots: tuple[str, ...], tournaments: list[Tournament]) -> dict[str, li
 
 
 def _replicator(zoo: Zoo, cells: dict[tuple[str, str], tuple[str, str]], folder: Path,
-                horizon: float, about: dict) -> dict:
+                horizon: float, about: dict, n_starts: int) -> dict:
     """The game's basins, integrated 10 times longer while some start has not converged, up
     to MAX_HORIZON."""
     while True:
-        rep = replicator.solve(zoo, cells, folder, horizon, about)
+        rep = replicator.solve(zoo, cells, folder, horizon, about, n_starts)
         if rep["n_converged"] == rep["n_starts"] or horizon >= MAX_HORIZON:
             return rep
         horizon *= 10
@@ -163,19 +168,22 @@ def _game_line(game: str, rs: list[Tournament], eq: dict, rep: dict) -> str:
             f"basins {basins or 'none'}")
 
 
-def run(family: str, ts: tuple[float, ...] = t_values(), horizon: float = HORIZON) -> dict:
-    """Solve, save and print the game of every grid point of one family."""
+def run(family: str, ts: tuple[float, ...] = t_values(), horizon: float = HORIZON,
+        alphas: tuple[float, ...] = ALPHAS, subset: str | None = None,
+        n_starts: int = replicator.N_STARTS) -> dict:
+    """Solve, save and print the game of every grid point of one family. A `subset` saves
+    under results/partial_transparency/<subset>/ instead."""
     zoo = load_zoo(ZOO, SIDE)
     bots = zoo.bots
     dist = distances(zoo, family)
     twins, top = twin_classes(bots, dist), ceiling(bots, dist)
-    tournaments = sweep(zoo, family, ts, ALPHAS, OPAQUE_TEMPERATURE, TOP_TEMPERATURE)
+    tournaments = sweep(zoo, family, ts, alphas, OPAQUE_TEMPERATURE, TOP_TEMPERATURE)
     channels = _channels(zoo, dist, tournaments)
     unreached = [c["t"] for c in channels if not c["reached"]]
     games = _games(bots, tournaments)
     game_of = {(r.t, r.alpha): game for game, rs in games.items() for r in rs}
 
-    out = RESULTS / ZOO / SIDE / family
+    out = (RESULTS / subset if subset else RESULTS) / ZOO / SIDE / family
     print(f"{ZOO}, {SIDE} side, {family} family: {len(tournaments)} grid points, "
           f"{len(games)} distinct games")
     for c in twins:
@@ -194,7 +202,7 @@ def run(family: str, ts: tuple[float, ...] = t_values(), horizon: float = HORIZO
                  "points": [{"t": r.t, "alpha": r.alpha} for r in rs]}
         folder = out / "games" / game
         eq = nash.solve(zoo, rs[0].cells, folder, about)
-        rep = _replicator(zoo, rs[0].cells, folder, horizon, about)
+        rep = _replicator(zoo, rs[0].cells, folder, horizon, about, n_starts)
         results[game] = (eq, rep)
         print(_game_line(game, rs, eq, rep))
         if rep["n_converged"] < rep["n_starts"]:
@@ -207,7 +215,7 @@ def run(family: str, ts: tuple[float, ...] = t_values(), horizon: float = HORIZO
         "family": family,
         "bots": list(bots),
         "ts": list(ts),
-        "alphas": list(ALPHAS),
+        "alphas": list(alphas),
         "settings": {
             # the bisection's bracket and stopping width, on T (signals.temperature_for)
             "min_temperature": signals.MIN_TEMPERATURE,
@@ -239,10 +247,10 @@ def run(family: str, ts: tuple[float, ...] = t_values(), horizon: float = HORIZO
 
     print("  game at each grid point (rows t, columns α). A row is shown where it changes, and")
     print("  holds down to the next row shown:")
-    print("      t  " + " ".join(f"{a:>4g}" for a in ALPHAS))
+    print("      t  " + " ".join(f"{a:>4g}" for a in alphas))
     previous = None
     for t in ts:
-        row = [game_of[(t, a)] for a in ALPHAS]
+        row = [game_of[(t, a)] for a in alphas]
         if row != previous or t == ts[-1]:
             print(f"  {t:5g}  " + " ".join(f"{g:>4s}" for g in row))
         previous = row
@@ -261,10 +269,16 @@ def main() -> None:
     p.add_argument("--t-step", type=float, default=T_STEP, help=f"default: {T_STEP:g}")
     p.add_argument("--horizon", type=float, default=HORIZON,
                    help=f"the first horizon (default: {HORIZON:g})")
+    p.add_argument("--alphas", type=float, nargs="+", default=ALPHAS,
+                   help=f"default: the original's, {' '.join(f'{a:g}' for a in ALPHAS)}")
+    p.add_argument("--subset", help="save under results/partial_transparency/<subset>/ "
+                                    "(default: results/partial_transparency/)")
+    p.add_argument("--starts", type=int, default=replicator.N_STARTS,
+                   help=f"replicator starts per game (default: {replicator.N_STARTS})")
     args = p.parse_args()
     ts = t_values(args.t_step)
     for family in [args.family] if args.family else FAMILIES:
-        run(family, ts, args.horizon)
+        run(family, ts, args.horizon, tuple(args.alphas), args.subset, args.starts)
 
 
 if __name__ == "__main__":
