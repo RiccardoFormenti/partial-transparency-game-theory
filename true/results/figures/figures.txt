@@ -18,3 +18,60 @@ Figure A (figure_A.pdf, figure_A.png)
   Every replicator dynamics run converges to the maximum-cooperation equilibrium, at every
   (t, α) pair. The green band, which the max equilibrium line runs inside, shows this.
   Data: behavioral family, results/partial_transparency/alpha_0.5-1/.
+
+Figure B (figure_B.pdf, figure_B.png)
+  x: caution α ∈ {0.5, 0.6, 0.7, 0.8, 0.9, 1}.
+  y: critical transparency t*, the lowest grid t from which on the replicator dynamics
+     converge to full cooperation. Below it they converge to full defection, with a single
+     switch in both families. In both families t* is also the lowest t at which a fully
+     cooperative equilibrium exists.
+  Solid line with points: behavioral family, t* = 0.11, 0.24, 0.37, 0.5, 0.67, 1.
+  Dashed, lighter line: syntactic family, t* = 0.07, 0.2, 0.37, 0.57, 0.79, 1.
+  Above a curve the population cooperates; below it, it defects. Each switch lies between t*
+  and t* - 0.01, the grid step. t* rises with caution in both families. The syntactic family
+  needs less transparency at α ≤ 0.6 and more at α ≥ 0.8. The two agree at α = 0.7 and at
+  α = 1, where only full transparency sustains cooperation. The behavioral points are colored
+  by α as in figure C.
+  In the syntactic family at α = 0.8 and 0.9, a partly cooperative equilibrium (Pr[(C, C)] =
+  11/18) exists somewhat below t* (from t = 0.49 and 0.66). The replicator dynamics do not
+  reach it and still converge to defection there.
+  Data: both families, results/partial_transparency/alpha_0.5-1/.
+
+Figure C (figure_C.pdf, figure_C.png)
+  Six panels, one per α ∈ {0.5, 0.6, 0.7, 0.8, 0.9, 1}.
+  x: transparency t, from 0 to 1.
+  y: cooperation the replicator dynamics converge to at that α, a solid line in the α's
+     viridis color. It equals the maximum equilibrium cooperation (figure A).
+  Each α switches once, at its t* (figure B, labeled in each panel), from full defection to
+  full cooperation. The switch is dashed, and a dot marks where cooperation starts.
+  Averaging these six switches gives figure A's six steps of 1/6.
+  Data: behavioral family, results/partial_transparency/alpha_0.5-1/.
+
+Figure D (figure_D.pdf, figure_D.png)
+  Figures C and B side by side: (a) is figure C, (b) is figure B, drawn by the same code.
+
+Figure E (figure_E.pdf, figure_E.png)
+  A phase diagram of the Nash components over transparency and caution.
+  x: transparency t, from 0 to 1.
+  y: caution α, from 0.5 to 1.
+  Every component has a single cooperation level Pr[(C, C)], and only three sets occur. Each
+  is a region, shaded in a viridis tint and labeled inside:
+    purple   1 component: full defection (0) only.
+    teal     2 components: full defection (0) and full cooperation (1).
+    yellow   3 components: full defection (0), full cooperation (1), and partial
+             cooperation (11/18).
+  Full defection is an equilibrium everywhere. As t grows, each α gains full cooperation at
+  t* (the left boundary, the same as figure B) and the partial component at t** (the right
+  boundary):
+    α     0.5   0.6   0.7   0.8   0.9   1
+    t*    0.11  0.24  0.37  0.5   0.67  1
+    t**   0.28  0.39  0.5   0.69  0.88  1
+  The dots are these sampled values. The boundaries connect them with straight lines; between
+  the six α the boundaries are not computed. Each switch lies between the dot's t and the grid
+  t 0.01 below it. At α = 1 both components appear only at t = 1, where the boundaries meet.
+  The replicator dynamics converge to full cooperation right of t* (teal and yellow) and to
+  defection left of it.
+  All yellow points play one game, the full-transparency game: there the signal is sharp
+  enough that every bot acts as at full transparency. The replicator dynamics never select
+  the partial component.
+  Data: behavioral family, results/partial_transparency/alpha_0.5-1/.
