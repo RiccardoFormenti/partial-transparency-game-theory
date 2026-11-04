@@ -101,8 +101,11 @@ def _extreme(n: int) -> str:
     return f"{n} extreme {'equilibrium' if n == 1 else 'equilibria'}"
 
 
-def run(name: str, side: str) -> dict:
-    """Compute, save and print the equilibria of one zoo on one side."""
+def run(name: str, side: str, out: Path | None = None) -> dict:
+    """Compute, save and print the equilibria of one zoo on one side.
+
+    Saves to `out`, by default results/full_transparency/<zoo>/<side>/.
+    """
     zoo = load_zoo(name, side)
     cells = full_transparency_cells(zoo)
     A = exact(payoff_matrix(zoo.bots, cells, **PAYOFFS))
@@ -110,7 +113,7 @@ def run(name: str, side: str) -> dict:
     output = run_lrsnash(game)
     record = _record(zoo, cells, A, analyse(zoo.bots, cells, A, parse_lrsnash(output, len(A))))
 
-    out = RESULTS / name / side
+    out = out or RESULTS / name / side
     out.mkdir(parents=True, exist_ok=True)
     (out / "lrsnash_input.txt").write_text(game)
     (out / "lrsnash_output.txt").write_text(output)

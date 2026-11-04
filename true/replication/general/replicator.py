@@ -10,7 +10,8 @@ member of the population and expects (Ax)_i; a type grows when that beats the av
    asks the question of a smaller zoo.
 2. Each start is integrated in log-shares z_i = log x_i, where ż_i = g_i(x) and
    x = softmax(z). Shares then stay positive and sum to 1 exactly, however small they get.
-3. A start has converged when, at both HORIZON / 2 and HORIZON, x is a symmetric Nash
+3. A start is integrated up to a horizon, HORIZON unless `basins` is given another. It has
+   converged when, at both half the horizon and the horizon, x is a symmetric Nash
    equilibrium up to TOL: no type grows faster than TOL, every type is absent (x_i < TOL) or
    ties the best (g_i ≥ −TOL), these sets are the same at both times, and x moved less than
    TOL between them. A cycle fails the test, even a heteroclinic one, which slows down near
@@ -65,7 +66,7 @@ Z95 = 1.959963984540054  # the standard normal's 97.5% quantile
 @dataclass(frozen=True)
 class Run:
     start: np.ndarray  # x at time 0
-    end: np.ndarray  # x at HORIZON
+    end: np.ndarray  # x at the horizon
     converged: bool
     component: int | None  # the Nash component `end` lies in; None when not converged
     distance: float | None  # sup-norm distance from `end` to a symmetric equilibrium in it
@@ -147,8 +148,10 @@ def _locate(x: np.ndarray, present: frozenset[int], best: frozenset[int],
     return components.pop(), distance
 
 
-def basins(A: Matrix, found: list[Equilibrium], starts: np.ndarray) -> list[Run]:
-    """Integrate each start; match the converged end states to their Nash components.
+def basins(A: Matrix, found: list[Equilibrium], starts: np.ndarray,
+           horizon: float = HORIZON) -> list[Run]:
+    """Integrate each start up to `horizon`; match the converged end states to their Nash
+    components.
 
     `found` are the extreme equilibria of (A, Aᵀ), from `equilibria.analyse`.
     """
@@ -156,7 +159,7 @@ def basins(A: Matrix, found: list[Equilibrium], starts: np.ndarray) -> list[Run]
     vertices = _vertices(A, found)
     runs = []
     for start in starts:
-        half, end = integrate(Af, start, (HORIZON / 2, HORIZON))
+        half, end = integrate(Af, start, (horizon / 2, horizon))
         found_labels = labels(Af, end)
         converged = (found_labels is not None and found_labels == labels(Af, half)
                      and float(np.abs(end - half).max()) < TOL)

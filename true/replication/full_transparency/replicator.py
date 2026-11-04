@@ -14,7 +14,7 @@ Usage (from true/):
   python -m replication.full_transparency.replicator               body8, floor side
   python -m replication.full_transparency.replicator <zoo>         another zoo, e.g. body8+trolls
   python -m replication.full_transparency.replicator all           every zoo
-Add --side hinge for the hinge side.
+Add --side hinge for the hinge side, and --horizon <time> to integrate longer than 1e5.
 """
 
 from __future__ import annotations
@@ -83,7 +83,7 @@ def _component(k: int, bots: tuple[str, ...], found: list[Equilibrium], runs: li
 
 
 def _record(zoo: Zoo, A: Matrix, found: list[Equilibrium], runs: list[Run],
-            payoff: list[float], cooperation: list[float]) -> dict:
+            payoff: list[float], cooperation: list[float], horizon: float) -> dict:
     bots, n = zoo.bots, len(runs)
     unconverged = [i for i, r in enumerate(runs) if not r.converged]
     return {
@@ -95,7 +95,7 @@ def _record(zoo: Zoo, A: Matrix, found: list[Equilibrium], runs: list[Run],
         "settings": {
             "n_starts": n,
             "seed": SEED,
-            "horizon": HORIZON,
+            "horizon": horizon,
             "tolerance": TOL,
             "max_distance": MAX_DISTANCE,
             "integrator": "LSODA on log-shares",
@@ -144,26 +144,32 @@ def _shown(r: dict[str, float]) -> str:
     return lo if lo == hi else f"{lo} to {hi}"
 
 
-def run(name: str, side: str) -> dict:
-    """Compute, save and print the basins of one zoo on one side."""
+def run(name: str, side: str, out: Path | None = None, horizon: float = HORIZON) -> dict:
+    """Compute, save and print the basins of one zoo on one side, integrating each start up
+    to `horizon`.
+
+    Reads equilibria.json from, and saves to, `out`, by default
+    results/full_transparency/<zoo>/<side>/.
+    """
     zoo = load_zoo(name, side)
     cells = full_transparency_cells(zoo)
     A = exact(payoff_matrix(zoo.bots, cells, **PAYOFFS))
     found = analyse(zoo.bots, cells, A, parse_lrsnash(run_lrsnash(lrsnash_input(A)), len(A)))
-    out = RESULTS / name / side
+    out = out or RESULTS / name / side
     _check_against_nash(out, zoo.bots, found)
 
-    runs = basins(A, found, sample_starts(len(A), N_STARTS, SEED))
+    runs = basins(A, found, sample_starts(len(A), N_STARTS, SEED), horizon)
     Af = np.array(A, dtype=float)
     payoff = [float(r.end @ Af @ r.end) for r in runs]
     cooperation = [float(cooperation_rate(zoo.bots, cells, r.end, r.end)) for r in runs]
-    record = _record(zoo, A, found, runs, payoff, cooperation)
+    record = _record(zoo, A, found, runs, payoff, cooperation, horizon)
 
     out.mkdir(parents=True, exist_ok=True)
     (out / "replicator.json").write_text(json.dumps(record, indent=2) + "\n")
     _write_runs(out / "replicator_runs.csv", zoo.bots, runs, payoff, cooperation)
 
-    print(f"{name}, {side} side: {record['n_starts']} starts, {record['n_converged']} converged")
+    print(f"{name}, {side} side: {record['n_starts']} starts to time {horizon:g}, "
+          f"{record['n_converged']} converged")
     for c in record["components"]:
         lo, hi = c["basin_ci95"]
         line = (f"  component {c['id']} ({', '.join(c['bots'])}): {c['n_starts']} starts, "
@@ -181,9 +187,10 @@ def main() -> None:
     p = argparse.ArgumentParser(description="Replicator dynamics of the full-transparency game.")
     p.add_argument("zoo", nargs="?", default="body8", choices=list(ZOOS) + ["all"])
     p.add_argument("--side", choices=SIDES, default="floor", help="default: floor")
+    p.add_argument("--horizon", type=float, default=HORIZON, help=f"default: {HORIZON:g}")
     args = p.parse_args()
     for name in ZOOS if args.zoo == "all" else [args.zoo]:
-        run(name, args.side)
+        run(name, args.side, horizon=args.horizon)
 
 
 if __name__ == "__main__":

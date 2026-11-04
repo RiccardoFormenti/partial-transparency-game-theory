@@ -1,0 +1,224 @@
+{
+  "side": "floor",
+  "zoos": [
+    {
+      "zoo": "nonprovers+dupoc",
+      "bots": [
+        "CooperateBot",
+        "DBot",
+        "DefectBot",
+        "DupocBot",
+        "EBot",
+        "OBot",
+        "TitForTatBot"
+      ],
+      "nash": {
+        "n_components": 3,
+        "n_equilibria": 21,
+        "cooperative_component": {
+          "id": 0,
+          "bots": [
+            "CooperateBot",
+            "DupocBot",
+            "TitForTatBot"
+          ]
+        }
+      },
+      "replicator": {
+        "horizon": 100000.0,
+        "n_starts": 1000,
+        "n_converged": 1000,
+        "cooperative_basin": 1.0,
+        "cooperative_basin_ci95": [
+          0.996173242,
+          1.0
+        ],
+        "cooperation": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "basins": [
+          {
+            "id": 0,
+            "bots": [
+              "CooperateBot",
+              "DupocBot",
+              "TitForTatBot"
+            ],
+            "basin": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "zoo": "body8",
+      "bots": [
+        "CooperateBot",
+        "CupodBot",
+        "DBot",
+        "DefectBot",
+        "DupocBot",
+        "EBot",
+        "OBot",
+        "TitForTatBot"
+      ],
+      "nash": {
+        "n_components": 3,
+        "n_equilibria": 21,
+        "cooperative_component": {
+          "id": 0,
+          "bots": [
+            "CooperateBot",
+            "DupocBot",
+            "TitForTatBot"
+          ]
+        }
+      },
+      "replicator": {
+        "horizon": 100000.0,
+        "n_starts": 1000,
+        "n_converged": 1000,
+        "cooperative_basin": 1.0,
+        "cooperative_basin_ci95": [
+          0.996173242,
+          1.0
+        ],
+        "cooperation": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "basins": [
+          {
+            "id": 0,
+            "bots": [
+              "CooperateBot",
+              "DupocBot",
+              "TitForTatBot"
+            ],
+            "basin": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "zoo": "body8+trolls",
+      "bots": [
+        "CooperateBot",
+        "CupodBot",
+        "CupodTrollBot",
+        "DBot",
+        "DefectBot",
+        "DupocBot",
+        "DupocTrollBot",
+        "EBot",
+        "OBot",
+        "TitForTatBot"
+      ],
+      "nash": {
+        "n_components": 3,
+        "n_equilibria": 35,
+        "cooperative_component": {
+          "id": 1,
+          "bots": [
+            "CooperateBot",
+            "DupocBot",
+            "TitForTatBot"
+          ]
+        }
+      },
+      "replicator": {
+        "horizon": 1000000000.0,
+        "n_starts": 1000,
+        "n_converged": 997,
+        "cooperative_basin": 0.948,
+        "cooperative_basin_ci95": [
+          0.932444261,
+          0.960126964
+        ],
+        "cooperation": {
+          "mean": 0.951,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "basins": [
+          {
+            "id": 1,
+            "bots": [
+              "CooperateBot",
+              "DupocBot",
+              "TitForTatBot"
+            ],
+            "basin": 0.948
+          },
+          {
+            "id": 2,
+            "bots": [
+              "DefectBot",
+              "OBot"
+            ],
+            "basin": 0.049
+          }
+        ]
+      }
+    },
+    {
+      "zoo": "body8+trolls+provers",
+      "bots": [
+        "CIMCIC",
+        "CooperateBot",
+        "CupodBot",
+        "CupodTrollBot",
+        "DBot",
+        "DIMDID",
+        "DefectBot",
+        "DupocBot",
+        "DupocTrollBot",
+        "EBot",
+        "OBot",
+        "TitForTatBot"
+      ],
+      "nash": {
+        "n_components": 3,
+        "n_equilibria": 69,
+        "cooperative_component": {
+          "id": 0,
+          "bots": [
+            "CIMCIC",
+            "CooperateBot",
+            "DupocBot",
+            "TitForTatBot"
+          ]
+        }
+      },
+      "replicator": {
+        "horizon": 100000.0,
+        "n_starts": 1000,
+        "n_converged": 1000,
+        "cooperative_basin": 1.0,
+        "cooperative_basin_ci95": [
+          0.996173242,
+          1.0
+        ],
+        "cooperation": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "basins": [
+          {
+            "id": 0,
+            "bots": [
+              "CIMCIC",
+              "CooperateBot",
+              "DupocBot",
+              "TitForTatBot"
+            ],
+            "basin": 1.0
+          }
+        ]
+      }
+    }
+  ]
+}
