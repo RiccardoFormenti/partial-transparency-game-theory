@@ -1,0 +1,601 @@
+{
+  "zoo": "body8",
+  "side": "floor",
+  "family": "behavioral",
+  "game": "g15",
+  "points": [
+    {
+      "t": 0.4,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.39,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.38,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.37,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.36,
+      "alpha": 0.2
+    }
+  ],
+  "bots": [
+    "CooperateBot",
+    "CupodBot",
+    "DBot",
+    "DefectBot",
+    "DupocBot",
+    "EBot",
+    "OBot",
+    "TitForTatBot"
+  ],
+  "payoffs": {
+    "T": "3",
+    "R": "2",
+    "P": "0",
+    "S": "-1"
+  },
+  "cells": [
+    [
+      "CC",
+      "CC",
+      "CC",
+      "CD",
+      "CC",
+      "CC",
+      "CC",
+      "CC"
+    ],
+    [
+      "CC",
+      "CC",
+      "CC",
+      "CD",
+      "CC",
+      "CC",
+      "CD",
+      "CC"
+    ],
+    [
+      "CC",
+      "CC",
+      "CC",
+      "CD",
+      "CD",
+      "CC",
+      "CD",
+      "CC"
+    ],
+    [
+      "DC",
+      "DC",
+      "DC",
+      "DD",
+      "DD",
+      "DC",
+      "DD",
+      "DC"
+    ],
+    [
+      "CC",
+      "CC",
+      "DC",
+      "DD",
+      "CC",
+      "DC",
+      "DD",
+      "CC"
+    ],
+    [
+      "CC",
+      "CC",
+      "CC",
+      "CD",
+      "CD",
+      "CC",
+      "CD",
+      "CC"
+    ],
+    [
+      "CC",
+      "DC",
+      "DC",
+      "DD",
+      "DD",
+      "DC",
+      "DD",
+      "DC"
+    ],
+    [
+      "CC",
+      "CC",
+      "CC",
+      "CD",
+      "CC",
+      "CC",
+      "CD",
+      "CC"
+    ]
+  ],
+  "A": [
+    [
+      "2",
+      "2",
+      "2",
+      "-1",
+      "2",
+      "2",
+      "2",
+      "2"
+    ],
+    [
+      "2",
+      "2",
+      "2",
+      "-1",
+      "2",
+      "2",
+      "-1",
+      "2"
+    ],
+    [
+      "2",
+      "2",
+      "2",
+      "-1",
+      "-1",
+      "2",
+      "-1",
+      "2"
+    ],
+    [
+      "3",
+      "3",
+      "3",
+      "0",
+      "0",
+      "3",
+      "0",
+      "3"
+    ],
+    [
+      "2",
+      "2",
+      "3",
+      "0",
+      "2",
+      "3",
+      "0",
+      "2"
+    ],
+    [
+      "2",
+      "2",
+      "2",
+      "-1",
+      "-1",
+      "2",
+      "-1",
+      "2"
+    ],
+    [
+      "2",
+      "3",
+      "3",
+      "0",
+      "0",
+      "3",
+      "0",
+      "3"
+    ],
+    [
+      "2",
+      "2",
+      "2",
+      "-1",
+      "2",
+      "2",
+      "-1",
+      "2"
+    ]
+  ],
+  "n_equilibria": 20,
+  "n_symmetric": 6,
+  "n_components": 2,
+  "components": [
+    {
+      "id": 0,
+      "equilibria": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "bots": [
+        "CooperateBot",
+        "CupodBot",
+        "DupocBot",
+        "TitForTatBot"
+      ],
+      "n_symmetric": 4,
+      "row_payoff": {
+        "min": "2",
+        "max": "2"
+      },
+      "cooperation": {
+        "min": "1",
+        "max": "1"
+      }
+    },
+    {
+      "id": 1,
+      "equilibria": [
+        8,
+        9,
+        10,
+        11
+      ],
+      "bots": [
+        "DefectBot",
+        "OBot"
+      ],
+      "n_symmetric": 2,
+      "row_payoff": {
+        "min": "0",
+        "max": "0"
+      },
+      "cooperation": {
+        "min": "0",
+        "max": "0"
+      }
+    }
+  ],
+  "equilibria": [
+    {
+      "index": 0,
+      "row": {
+        "DupocBot": "1/3",
+        "TitForTatBot": "2/3"
+      },
+      "col": {
+        "DupocBot": "1/3",
+        "TitForTatBot": "2/3"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": true,
+      "mirror": 0,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 1,
+      "row": {
+        "DupocBot": "1/3",
+        "TitForTatBot": "2/3"
+      },
+      "col": {
+        "DupocBot": "1"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": false,
+      "mirror": 4,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 2,
+      "row": {
+        "DupocBot": "1/3",
+        "TitForTatBot": "2/3"
+      },
+      "col": {
+        "CupodBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": false,
+      "mirror": 12,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 3,
+      "row": {
+        "DupocBot": "1/3",
+        "TitForTatBot": "2/3"
+      },
+      "col": {
+        "CooperateBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": false,
+      "mirror": 16,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 4,
+      "row": {
+        "DupocBot": "1"
+      },
+      "col": {
+        "DupocBot": "1/3",
+        "TitForTatBot": "2/3"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": false,
+      "mirror": 1,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 5,
+      "row": {
+        "DupocBot": "1"
+      },
+      "col": {
+        "DupocBot": "1"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": true,
+      "mirror": 5,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 6,
+      "row": {
+        "DupocBot": "1"
+      },
+      "col": {
+        "CupodBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": false,
+      "mirror": 13,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 7,
+      "row": {
+        "DupocBot": "1"
+      },
+      "col": {
+        "CooperateBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": false,
+      "mirror": 17,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 8,
+      "row": {
+        "DefectBot": "2/3",
+        "OBot": "1/3"
+      },
+      "col": {
+        "DefectBot": "2/3",
+        "OBot": "1/3"
+      },
+      "row_payoff": "0",
+      "col_payoff": "0",
+      "symmetric": true,
+      "mirror": 8,
+      "component": 1,
+      "cooperation": "0"
+    },
+    {
+      "index": 9,
+      "row": {
+        "DefectBot": "2/3",
+        "OBot": "1/3"
+      },
+      "col": {
+        "DefectBot": "1"
+      },
+      "row_payoff": "0",
+      "col_payoff": "0",
+      "symmetric": false,
+      "mirror": 10,
+      "component": 1,
+      "cooperation": "0"
+    },
+    {
+      "index": 10,
+      "row": {
+        "DefectBot": "1"
+      },
+      "col": {
+        "DefectBot": "2/3",
+        "OBot": "1/3"
+      },
+      "row_payoff": "0",
+      "col_payoff": "0",
+      "symmetric": false,
+      "mirror": 9,
+      "component": 1,
+      "cooperation": "0"
+    },
+    {
+      "index": 11,
+      "row": {
+        "DefectBot": "1"
+      },
+      "col": {
+        "DefectBot": "1"
+      },
+      "row_payoff": "0",
+      "col_payoff": "0",
+      "symmetric": true,
+      "mirror": 11,
+      "component": 1,
+      "cooperation": "0"
+    },
+    {
+      "index": 12,
+      "row": {
+        "CupodBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "col": {
+        "DupocBot": "1/3",
+        "TitForTatBot": "2/3"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": false,
+      "mirror": 2,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 13,
+      "row": {
+        "CupodBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "col": {
+        "DupocBot": "1"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": false,
+      "mirror": 6,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 14,
+      "row": {
+        "CupodBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "col": {
+        "CupodBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": true,
+      "mirror": 14,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 15,
+      "row": {
+        "CupodBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "col": {
+        "CooperateBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": false,
+      "mirror": 18,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 16,
+      "row": {
+        "CooperateBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "col": {
+        "DupocBot": "1/3",
+        "TitForTatBot": "2/3"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": false,
+      "mirror": 3,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 17,
+      "row": {
+        "CooperateBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "col": {
+        "DupocBot": "1"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": false,
+      "mirror": 7,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 18,
+      "row": {
+        "CooperateBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "col": {
+        "CupodBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": false,
+      "mirror": 15,
+      "component": 0,
+      "cooperation": "1"
+    },
+    {
+      "index": 19,
+      "row": {
+        "CooperateBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "col": {
+        "CooperateBot": "2/3",
+        "DupocBot": "1/3"
+      },
+      "row_payoff": "2",
+      "col_payoff": "2",
+      "symmetric": true,
+      "mirror": 19,
+      "component": 0,
+      "cooperation": "1"
+    }
+  ]
+}

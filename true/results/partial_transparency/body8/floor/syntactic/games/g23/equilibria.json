@@ -1,0 +1,325 @@
+{
+  "zoo": "body8",
+  "side": "floor",
+  "family": "syntactic",
+  "game": "g23",
+  "points": [
+    {
+      "t": 0.28,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.27,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.26,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.25,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.24,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.23,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.22,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.21,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.2,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.19,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.18,
+      "alpha": 0.2
+    }
+  ],
+  "bots": [
+    "CooperateBot",
+    "CupodBot",
+    "DBot",
+    "DefectBot",
+    "DupocBot",
+    "EBot",
+    "OBot",
+    "TitForTatBot"
+  ],
+  "payoffs": {
+    "T": "3",
+    "R": "2",
+    "P": "0",
+    "S": "-1"
+  },
+  "cells": [
+    [
+      "CC",
+      "CC",
+      "CC",
+      "CD",
+      "CC",
+      "CC",
+      "CC",
+      "CC"
+    ],
+    [
+      "CC",
+      "CC",
+      "CC",
+      "CD",
+      "CC",
+      "CC",
+      "CD",
+      "CC"
+    ],
+    [
+      "CC",
+      "CC",
+      "CC",
+      "CD",
+      "CC",
+      "CC",
+      "CD",
+      "CC"
+    ],
+    [
+      "DC",
+      "DC",
+      "DC",
+      "DD",
+      "DC",
+      "DC",
+      "DD",
+      "DC"
+    ],
+    [
+      "CC",
+      "CC",
+      "CC",
+      "CD",
+      "CC",
+      "DC",
+      "CD",
+      "CC"
+    ],
+    [
+      "CC",
+      "CC",
+      "CC",
+      "CD",
+      "CD",
+      "CC",
+      "CD",
+      "CC"
+    ],
+    [
+      "CC",
+      "DC",
+      "DC",
+      "DD",
+      "DC",
+      "DC",
+      "DD",
+      "DC"
+    ],
+    [
+      "CC",
+      "CC",
+      "CC",
+      "CD",
+      "CC",
+      "CC",
+      "CD",
+      "CC"
+    ]
+  ],
+  "A": [
+    [
+      "2",
+      "2",
+      "2",
+      "-1",
+      "2",
+      "2",
+      "2",
+      "2"
+    ],
+    [
+      "2",
+      "2",
+      "2",
+      "-1",
+      "2",
+      "2",
+      "-1",
+      "2"
+    ],
+    [
+      "2",
+      "2",
+      "2",
+      "-1",
+      "2",
+      "2",
+      "-1",
+      "2"
+    ],
+    [
+      "3",
+      "3",
+      "3",
+      "0",
+      "3",
+      "3",
+      "0",
+      "3"
+    ],
+    [
+      "2",
+      "2",
+      "2",
+      "-1",
+      "2",
+      "3",
+      "-1",
+      "2"
+    ],
+    [
+      "2",
+      "2",
+      "2",
+      "-1",
+      "-1",
+      "2",
+      "-1",
+      "2"
+    ],
+    [
+      "2",
+      "3",
+      "3",
+      "0",
+      "3",
+      "3",
+      "0",
+      "3"
+    ],
+    [
+      "2",
+      "2",
+      "2",
+      "-1",
+      "2",
+      "2",
+      "-1",
+      "2"
+    ]
+  ],
+  "n_equilibria": 4,
+  "n_symmetric": 2,
+  "n_components": 1,
+  "components": [
+    {
+      "id": 0,
+      "equilibria": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "bots": [
+        "DefectBot",
+        "OBot"
+      ],
+      "n_symmetric": 2,
+      "row_payoff": {
+        "min": "0",
+        "max": "0"
+      },
+      "cooperation": {
+        "min": "0",
+        "max": "0"
+      }
+    }
+  ],
+  "equilibria": [
+    {
+      "index": 0,
+      "row": {
+        "DefectBot": "2/3",
+        "OBot": "1/3"
+      },
+      "col": {
+        "DefectBot": "2/3",
+        "OBot": "1/3"
+      },
+      "row_payoff": "0",
+      "col_payoff": "0",
+      "symmetric": true,
+      "mirror": 0,
+      "component": 0,
+      "cooperation": "0"
+    },
+    {
+      "index": 1,
+      "row": {
+        "DefectBot": "2/3",
+        "OBot": "1/3"
+      },
+      "col": {
+        "DefectBot": "1"
+      },
+      "row_payoff": "0",
+      "col_payoff": "0",
+      "symmetric": false,
+      "mirror": 2,
+      "component": 0,
+      "cooperation": "0"
+    },
+    {
+      "index": 2,
+      "row": {
+        "DefectBot": "1"
+      },
+      "col": {
+        "DefectBot": "2/3",
+        "OBot": "1/3"
+      },
+      "row_payoff": "0",
+      "col_payoff": "0",
+      "symmetric": false,
+      "mirror": 1,
+      "component": 0,
+      "cooperation": "0"
+    },
+    {
+      "index": 3,
+      "row": {
+        "DefectBot": "1"
+      },
+      "col": {
+        "DefectBot": "1"
+      },
+      "row_payoff": "0",
+      "col_payoff": "0",
+      "symmetric": true,
+      "mirror": 3,
+      "component": 0,
+      "cooperation": "0"
+    }
+  ]
+}

@@ -7,5 +7,7 @@ checks/ compares the two.
                          Nash equilibria, replicator dynamics
   full_transparency/     the Nash equilibria and replicator dynamics of each zoo's game,
                          and the ladder of nested zoos (Table 8), saved under results/
-  partial_transparency/  signals, how a lifted bot plays on one, and the (t, α) sweep
+  partial_transparency/  signals, how a lifted bot plays on one, the (t, α) sweep, and the
+                         Nash equilibria and replicator dynamics of each grid point's game,
+                         saved under results/
 """

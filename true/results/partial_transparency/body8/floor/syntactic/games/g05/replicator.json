@@ -1,0 +1,267 @@
+{
+  "zoo": "body8",
+  "side": "floor",
+  "family": "syntactic",
+  "game": "g05",
+  "points": [
+    {
+      "t": 0.69,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.68,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.67,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.66,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.65,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.64,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.63,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.62,
+      "alpha": 0.2
+    },
+    {
+      "t": 0.32,
+      "alpha": 0.4
+    },
+    {
+      "t": 0.31,
+      "alpha": 0.4
+    },
+    {
+      "t": 0.3,
+      "alpha": 0.4
+    }
+  ],
+  "bots": [
+    "CooperateBot",
+    "CupodBot",
+    "DBot",
+    "DefectBot",
+    "DupocBot",
+    "EBot",
+    "OBot",
+    "TitForTatBot"
+  ],
+  "payoffs": {
+    "T": "3",
+    "R": "2",
+    "P": "0",
+    "S": "-1"
+  },
+  "A": [
+    [
+      "2",
+      "2",
+      "-1",
+      "-1",
+      "2",
+      "-1",
+      "2",
+      "2"
+    ],
+    [
+      "2",
+      "0",
+      "2",
+      "0",
+      "-1",
+      "2",
+      "-1",
+      "2"
+    ],
+    [
+      "3",
+      "2",
+      "2",
+      "-1",
+      "-1",
+      "2",
+      "-1",
+      "2"
+    ],
+    [
+      "3",
+      "0",
+      "3",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "2",
+      "3",
+      "3",
+      "0",
+      "2",
+      "3",
+      "0",
+      "2"
+    ],
+    [
+      "3",
+      "2",
+      "2",
+      "0",
+      "-1",
+      "2",
+      "-1",
+      "-1"
+    ],
+    [
+      "2",
+      "3",
+      "3",
+      "0",
+      "0",
+      "3",
+      "0",
+      "3"
+    ],
+    [
+      "2",
+      "2",
+      "2",
+      "0",
+      "2",
+      "3",
+      "-1",
+      "2"
+    ]
+  ],
+  "settings": {
+    "n_starts": 1000,
+    "seed": 20260514,
+    "horizon": 100000.0,
+    "tolerance": 1e-06,
+    "max_distance": 0.0001,
+    "integrator": "LSODA on log-shares",
+    "rtol": 1e-10,
+    "atol": 1e-12
+  },
+  "n_starts": 1000,
+  "n_converged": 1000,
+  "components": [
+    {
+      "id": 0,
+      "bots": [
+        "CooperateBot",
+        "DupocBot",
+        "TitForTatBot"
+      ],
+      "n_starts": 1000,
+      "basin": 1.0,
+      "basin_ci95": [
+        0.996173242,
+        1.0
+      ],
+      "shares": {
+        "CooperateBot": {
+          "min": 0.0,
+          "max": 0.654954548
+        },
+        "DupocBot": {
+          "min": 0.199542186,
+          "max": 1.0
+        },
+        "TitForTatBot": {
+          "min": 0.0,
+          "max": 0.610661514
+        }
+      },
+      "supports": [
+        {
+          "bots": [
+            "CooperateBot",
+            "DupocBot",
+            "TitForTatBot"
+          ],
+          "n_starts": 920
+        },
+        {
+          "bots": [
+            "DupocBot"
+          ],
+          "n_starts": 45
+        },
+        {
+          "bots": [
+            "DupocBot",
+            "TitForTatBot"
+          ],
+          "n_starts": 32
+        },
+        {
+          "bots": [
+            "CooperateBot",
+            "DupocBot"
+          ],
+          "n_starts": 3
+        }
+      ],
+      "payoff": {
+        "min": 2.0,
+        "max": 2.0
+      },
+      "cooperation": {
+        "min": 1.0,
+        "max": 1.0
+      },
+      "max_distance": 9.98e-07
+    },
+    {
+      "id": 1,
+      "bots": [
+        "DefectBot",
+        "OBot"
+      ],
+      "n_starts": 0,
+      "basin": 0.0,
+      "basin_ci95": [
+        0.0,
+        0.003826758
+      ]
+    },
+    {
+      "id": 2,
+      "bots": [
+        "CooperateBot",
+        "EBot",
+        "OBot"
+      ],
+      "n_starts": 0,
+      "basin": 0.0,
+      "basin_ci95": [
+        0.0,
+        0.003826758
+      ]
+    }
+  ],
+  "unconverged": {
+    "n_starts": 0,
+    "share": 0.0,
+    "share_ci95": [
+      0.0,
+      0.003826758
+    ],
+    "runs": []
+  }
+}

@@ -83,12 +83,14 @@ def _component(k: int, bots: tuple[str, ...], found: list[Equilibrium], runs: li
 
 
 def _record(zoo: Zoo, A: Matrix, found: list[Equilibrium], runs: list[Run],
-            payoff: list[float], cooperation: list[float], horizon: float) -> dict:
+            payoff: list[float], cooperation: list[float], horizon: float,
+            about: dict | None = None) -> dict:
     bots, n = zoo.bots, len(runs)
     unconverged = [i for i, r in enumerate(runs) if not r.converged]
     return {
         "zoo": zoo.name,
         "side": zoo.side,
+        **(about or {}),
         "bots": list(bots),
         "payoffs": {k: str(v) for k, v in PAYOFFS.items()},
         "A": [[str(a) for a in row] for row in A],
@@ -132,16 +134,40 @@ def _check_against_nash(out: Path, bots: tuple[str, ...], found: list[Equilibriu
     """Component ids refer to equilibria.json: it must hold the equilibria computed here."""
     path = out / "equilibria.json"
     if not path.exists():
-        raise FileNotFoundError(f"{path} is missing: run replication.full_transparency.nash first")
+        raise FileNotFoundError(f"{path} is missing: compute the Nash equilibria first")
     saved = json.loads(path.read_text())
     if saved["bots"] != list(bots) or [e["component"] for e in saved["equilibria"]] != [
             e.component for e in found]:
-        raise ValueError(f"{path} is out of date: rerun replication.full_transparency.nash")
+        raise ValueError(f"{path} is out of date: recompute the Nash equilibria")
 
 
 def _shown(r: dict[str, float]) -> str:
     lo, hi = f"{r['min']:.6g}", f"{r['max']:.6g}"
     return lo if lo == hi else f"{lo} to {hi}"
+
+
+def solve(zoo: Zoo, cells: dict[tuple[str, str], tuple[str, str]], out: Path,
+          horizon: float = HORIZON, about: dict | None = None) -> dict:
+    """Compute and save to `out` the basins of the game `cells` define over the zoo's bots,
+    integrating each start up to `horizon`.
+
+    `out` must hold that game's equilibria.json (`nash.solve`). `about` adds entries to
+    replicator.json, after `zoo` and `side`.
+    """
+    A = exact(payoff_matrix(zoo.bots, cells, **PAYOFFS))
+    found = analyse(zoo.bots, cells, A, parse_lrsnash(run_lrsnash(lrsnash_input(A)), len(A)))
+    _check_against_nash(out, zoo.bots, found)
+
+    runs = basins(A, found, sample_starts(len(A), N_STARTS, SEED), horizon)
+    Af = np.array(A, dtype=float)
+    payoff = [float(r.end @ Af @ r.end) for r in runs]
+    cooperation = [float(cooperation_rate(zoo.bots, cells, r.end, r.end)) for r in runs]
+    record = _record(zoo, A, found, runs, payoff, cooperation, horizon, about)
+
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "replicator.json").write_text(json.dumps(record, indent=2) + "\n")
+    _write_runs(out / "replicator_runs.csv", zoo.bots, runs, payoff, cooperation)
+    return record
 
 
 def run(name: str, side: str, out: Path | None = None, horizon: float = HORIZON) -> dict:
@@ -152,21 +178,8 @@ def run(name: str, side: str, out: Path | None = None, horizon: float = HORIZON)
     results/full_transparency/<zoo>/<side>/.
     """
     zoo = load_zoo(name, side)
-    cells = full_transparency_cells(zoo)
-    A = exact(payoff_matrix(zoo.bots, cells, **PAYOFFS))
-    found = analyse(zoo.bots, cells, A, parse_lrsnash(run_lrsnash(lrsnash_input(A)), len(A)))
     out = out or RESULTS / name / side
-    _check_against_nash(out, zoo.bots, found)
-
-    runs = basins(A, found, sample_starts(len(A), N_STARTS, SEED), horizon)
-    Af = np.array(A, dtype=float)
-    payoff = [float(r.end @ Af @ r.end) for r in runs]
-    cooperation = [float(cooperation_rate(zoo.bots, cells, r.end, r.end)) for r in runs]
-    record = _record(zoo, A, found, runs, payoff, cooperation, horizon)
-
-    out.mkdir(parents=True, exist_ok=True)
-    (out / "replicator.json").write_text(json.dumps(record, indent=2) + "\n")
-    _write_runs(out / "replicator_runs.csv", zoo.bots, runs, payoff, cooperation)
+    record = solve(zoo, full_transparency_cells(zoo), out, horizon)
 
     print(f"{name}, {side} side: {record['n_starts']} starts to time {horizon:g}, "
           f"{record['n_converged']} converged")

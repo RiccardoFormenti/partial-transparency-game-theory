@@ -66,11 +66,13 @@ def _components(bots: tuple[str, ...], found: list[Equilibrium]) -> list[dict]:
     return out
 
 
-def _record(zoo: Zoo, cells: dict, A: list, found: list[Equilibrium]) -> dict:
+def _record(zoo: Zoo, cells: dict, A: list, found: list[Equilibrium],
+            about: dict | None = None) -> dict:
     bots = zoo.bots
     return {
         "zoo": zoo.name,
         "side": zoo.side,
+        **(about or {}),
         "bots": list(bots),
         "payoffs": {k: str(v) for k, v in PAYOFFS.items()},
         "cells": [["".join(cells[(r, c)]) for c in bots] for r in bots],
@@ -101,23 +103,33 @@ def _extreme(n: int) -> str:
     return f"{n} extreme {'equilibrium' if n == 1 else 'equilibria'}"
 
 
+def solve(zoo: Zoo, cells: dict[tuple[str, str], tuple[str, str]], out: Path,
+          about: dict | None = None) -> dict:
+    """Compute and save to `out` the equilibria of the game `cells` define over the zoo's bots.
+
+    `about` adds entries to equilibria.json, after `zoo` and `side`.
+    """
+    A = exact(payoff_matrix(zoo.bots, cells, **PAYOFFS))
+    game = lrsnash_input(A)
+    output = run_lrsnash(game)
+    record = _record(zoo, cells, A, analyse(zoo.bots, cells, A, parse_lrsnash(output, len(A))),
+                     about)
+
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "lrsnash_input.txt").write_text(game)
+    (out / "lrsnash_output.txt").write_text(output)
+    (out / "equilibria.json").write_text(json.dumps(record, indent=2) + "\n")
+    return record
+
+
 def run(name: str, side: str, out: Path | None = None) -> dict:
     """Compute, save and print the equilibria of one zoo on one side.
 
     Saves to `out`, by default results/full_transparency/<zoo>/<side>/.
     """
     zoo = load_zoo(name, side)
-    cells = full_transparency_cells(zoo)
-    A = exact(payoff_matrix(zoo.bots, cells, **PAYOFFS))
-    game = lrsnash_input(A)
-    output = run_lrsnash(game)
-    record = _record(zoo, cells, A, analyse(zoo.bots, cells, A, parse_lrsnash(output, len(A))))
-
     out = out or RESULTS / name / side
-    out.mkdir(parents=True, exist_ok=True)
-    (out / "lrsnash_input.txt").write_text(game)
-    (out / "lrsnash_output.txt").write_text(output)
-    (out / "equilibria.json").write_text(json.dumps(record, indent=2) + "\n")
+    record = solve(zoo, full_transparency_cells(zoo), out)
 
     print(f"{name}, {side} side: {_extreme(record['n_equilibria'])} "
           f"({record['n_symmetric']} symmetric) in {record['n_components']} components")
