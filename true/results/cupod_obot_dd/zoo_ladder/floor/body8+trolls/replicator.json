@@ -1,0 +1,278 @@
+{
+  "zoo": "body8+trolls",
+  "side": "floor",
+  "bots": [
+    "CooperateBot",
+    "CupodBot",
+    "CupodTrollBot",
+    "DBot",
+    "DefectBot",
+    "DupocBot",
+    "DupocTrollBot",
+    "EBot",
+    "OBot",
+    "TitForTatBot"
+  ],
+  "payoffs": {
+    "T": "3",
+    "R": "2",
+    "P": "0",
+    "S": "-1"
+  },
+  "A": [
+    [
+      "2",
+      "2",
+      "2",
+      "-1",
+      "-1",
+      "2",
+      "2",
+      "-1",
+      "2",
+      "2"
+    ],
+    [
+      "2",
+      "0",
+      "0",
+      "2",
+      "0",
+      "-1",
+      "2",
+      "2",
+      "0",
+      "2"
+    ],
+    [
+      "2",
+      "0",
+      "2",
+      "-1",
+      "-1",
+      "-1",
+      "2",
+      "-1",
+      "2",
+      "2"
+    ],
+    [
+      "3",
+      "2",
+      "3",
+      "0",
+      "-1",
+      "-1",
+      "3",
+      "-1",
+      "-1",
+      "-1"
+    ],
+    [
+      "3",
+      "0",
+      "3",
+      "3",
+      "0",
+      "0",
+      "3",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "2",
+      "3",
+      "3",
+      "3",
+      "0",
+      "2",
+      "0",
+      "3",
+      "0",
+      "2"
+    ],
+    [
+      "2",
+      "2",
+      "2",
+      "-1",
+      "-1",
+      "0",
+      "2",
+      "-1",
+      "2",
+      "2"
+    ],
+    [
+      "3",
+      "2",
+      "3",
+      "3",
+      "0",
+      "-1",
+      "3",
+      "2",
+      "-1",
+      "-1"
+    ],
+    [
+      "2",
+      "0",
+      "2",
+      "3",
+      "0",
+      "0",
+      "2",
+      "3",
+      "0",
+      "3"
+    ],
+    [
+      "2",
+      "2",
+      "2",
+      "3",
+      "0",
+      "2",
+      "2",
+      "3",
+      "-1",
+      "2"
+    ]
+  ],
+  "settings": {
+    "n_starts": 100,
+    "seed": 20260514,
+    "horizon": 1000000000.0,
+    "tolerance": 1e-06,
+    "max_distance": 0.0001,
+    "integrator": "LSODA on log-shares",
+    "rtol": 1e-10,
+    "atol": 1e-12
+  },
+  "n_starts": 100,
+  "n_converged": 100,
+  "components": [
+    {
+      "id": 0,
+      "bots": [
+        "CooperateBot",
+        "CupodTrollBot",
+        "DupocBot",
+        "DupocTrollBot",
+        "EBot",
+        "OBot"
+      ],
+      "n_starts": 0,
+      "basin": 0.0,
+      "basin_ci95": [
+        0.0,
+        0.036993498
+      ]
+    },
+    {
+      "id": 1,
+      "bots": [
+        "CooperateBot",
+        "DupocBot",
+        "TitForTatBot"
+      ],
+      "n_starts": 97,
+      "basin": 0.97,
+      "basin_ci95": [
+        0.915480636,
+        0.989745476
+      ],
+      "shares": {
+        "CooperateBot": {
+          "min": 0.0,
+          "max": 0.631756313
+        },
+        "DupocBot": {
+          "min": 0.231875475,
+          "max": 1.0
+        },
+        "TitForTatBot": {
+          "min": 0.0,
+          "max": 0.475223547
+        }
+      },
+      "supports": [
+        {
+          "bots": [
+            "CooperateBot",
+            "DupocBot",
+            "TitForTatBot"
+          ],
+          "n_starts": 70
+        },
+        {
+          "bots": [
+            "DupocBot"
+          ],
+          "n_starts": 27
+        }
+      ],
+      "payoff": {
+        "min": 2.0,
+        "max": 2.0
+      },
+      "cooperation": {
+        "min": 1.0,
+        "max": 1.0
+      },
+      "max_distance": 0.0
+    },
+    {
+      "id": 2,
+      "bots": [
+        "DefectBot",
+        "OBot"
+      ],
+      "n_starts": 3,
+      "basin": 0.03,
+      "basin_ci95": [
+        0.010254524,
+        0.084519364
+      ],
+      "shares": {
+        "DefectBot": {
+          "min": 0.74719477,
+          "max": 0.747195264
+        },
+        "OBot": {
+          "min": 0.252804736,
+          "max": 0.252805221
+        }
+      },
+      "supports": [
+        {
+          "bots": [
+            "DefectBot",
+            "OBot"
+          ],
+          "n_starts": 3
+        }
+      ],
+      "payoff": {
+        "min": 0.0,
+        "max": 0.0
+      },
+      "cooperation": {
+        "min": 0.0,
+        "max": 0.0
+      },
+      "max_distance": 1e-08
+    }
+  ],
+  "unconverged": {
+    "n_starts": 0,
+    "share": 0.0,
+    "share_ci95": [
+      0.0,
+      0.036993498
+    ],
+    "runs": []
+  }
+}

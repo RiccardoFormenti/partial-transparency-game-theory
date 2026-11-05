@@ -1,0 +1,15 @@
+*lrsnash:lrslib_v.7.3_2024.5.30(64bit,lrsgmp.h,hybrid_arithmetic,_gmp_v.6.3)
+2  0  0  0  1  0  0  0  0  2 
+2  0  0  0  0  0  0  1  0  2 
+1  0  0  0  1  0  0  0  0  2 
+
+2  0  0  0  1  0  0  0  0  2 
+2  0  0  0  0  0  0  1  0  2 
+1  0  0  0  0  0  0  1  0  2 
+
+*Number of equilibria found: 4
+*Player 1: vertices=8 bases=8 pivots=17
+*Player 2: vertices=4 bases=3 pivots=18
+
+*lrsnash::lrslib_v.7.3_2024.5.30(64bit,lrsgmp.h,hybrid_arithmetic,_gmp_v.6.3)
+*0.002u 0.004s 2162688Kb 21 flts 0 swaps 0 blks-in 0 blks-out 

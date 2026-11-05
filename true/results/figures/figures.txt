@@ -54,12 +54,18 @@ Figure E (figure_E.pdf, figure_E.png)
   A phase diagram of the Nash components over transparency and caution.
   x: transparency t, from 0 to 1.
   y: caution α, from 0.5 to 1.
-  Every component has a single cooperation level Pr[(C, C)], and only three sets occur. Each
-  is a region, shaded in a viridis tint and labeled inside:
-    purple   1 component: full defection (0) only.
-    teal     2 components: full defection (0) and full cooperation (1).
-    yellow   3 components: full defection (0), full cooperation (1), and partial
-             cooperation (11/18).
+  Every component has a single cooperation level Pr[(C, C)], and only three sets occur. Two
+  dark gray boundaries split the plane into three regions. Each region is shaded in a light
+  tint: blue and red from the RdYlBu palette (#4575b4, #d73027), and viridis yellow
+  (#fde725). Within 0.2 in of a boundary or of the frame the tint softly lightens, to 40% of
+  its strength at the line. The blue and red regions are labeled inside. The yellow band is
+  too narrow for its label, which sits just above it with a short line pointing in. The
+  labels are dark gray, like the other figures' annotations. Each names what the region adds
+  to the one before:
+    blue    "defection only"      full defection (0) only.
+    yellow  "+ full cooperation"  full defection (0) and full cooperation (1).
+    red     "+ partial (11/18)"   full defection (0), full cooperation (1), and partial
+                                  cooperation (11/18).
   Full defection is an equilibrium everywhere. As t grows, each α gains full cooperation at
   t* (the left boundary, the same as figure B) and the partial component at t** (the right
   boundary):
@@ -69,9 +75,9 @@ Figure E (figure_E.pdf, figure_E.png)
   The dots are these sampled values. The boundaries connect them with straight lines; between
   the six α the boundaries are not computed. Each switch lies between the dot's t and the grid
   t 0.01 below it. At α = 1 both components appear only at t = 1, where the boundaries meet.
-  The replicator dynamics converge to full cooperation right of t* (teal and yellow) and to
+  The replicator dynamics converge to full cooperation right of t* (yellow and red) and to
   defection left of it.
-  All yellow points play one game, the full-transparency game: there the signal is sharp
+  All red points play one game, the full-transparency game: there the signal is sharp
   enough that every bot acts as at full transparency. The replicator dynamics never select
   the partial component.
   Data: behavioral family, results/partial_transparency/alpha_0.5-1/.

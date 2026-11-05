@@ -326,7 +326,8 @@ def figure_E():
     alone; defection and full cooperation; and those two with the partial cooperation 11/18.
     As t grows, each α gains them in that order: full cooperation at t* (figure B), the
     partial one at t**. The two boundaries connect their values at the six sampled α (dots),
-    and the three regions between them are shaded in viridis tints, from 1 component to 3.
+    and each region is shaded in a light tint (blue, yellow, red) that lightens
+    toward them and toward the frame.
     """
     ts, alphas, points = component_levels()
     count = {(0,): 1, (0, 1): 2, (0, Fraction(11, 18), 1): 3}  # components' Pr[(C, C)]
@@ -340,26 +341,43 @@ def figure_E():
         t_partial.append(ts[np.argmax(n == 3)])
 
     fig, ax = plt.subplots(figsize=(4.6, 3.4))
-    regions = [  # (left edge, right edge, color, label)
-        (np.zeros(len(alphas)), t_full, tint(VIRIDIS[0], 0.3), "1: defection only"),
-        (t_full, t_partial, tint("#21918c", 0.4), "2: + full cooperation"),
-        (t_partial, np.ones(len(alphas)), tint(VIRIDIS[5], 0.5), "3: + partial (11/18)"),
-    ]
-    for left, right, color, _ in regions:
-        ax.fill_betweenx(alphas, left, right, color=color, lw=0)
+    # Each region in its tint, lighter toward the boundaries and the four sides of the
+    # frame: each of them dims the tint over the FADE inches nearest it, and together they
+    # dim it down to EDGE of the full tint. Multiplying their fades keeps the corners smooth.
+    FADE, EDGE = 0.2, 0.4
+    colors = np.array([matplotlib.colors.to_rgb(c) for c in ("#4575b4", VIRIDIS[5], "#d73027")])
+    shares = np.array([0.16, 0.28, 0.13])
+    width, height = ax.get_position().size * fig.get_size_inches()
+    t, a = np.meshgrid(np.linspace(0, 1, 1200), np.linspace(alphas[0], alphas[-1], 800))
+    region = (t >= np.interp(a, alphas, t_full)).astype(int) + (t >= np.interp(a, alphas, t_partial))
+    point = np.stack([t * width, (a - alphas[0]) / (alphas[-1] - alphas[0]) * height], axis=-1)
+    distances = [point[..., 0], width - point[..., 0], point[..., 1], height - point[..., 1]]
     for edge in (t_full, t_partial):
-        ax.plot(edge, alphas, color="#444444", lw=1.2, marker="o", ms=3.5, clip_on=False)
-    # Labels inside the regions; the middle one runs along its band.
-    ink = dict(fontsize=8.5, color="#333333", ha="center", va="center")
-    ax.text(0.2, 0.86, "1: defection only", **ink)
-    ax.text(0.8, 0.6, "3: + partial (11/18)", **ink)
-    a0, a1 = 0.6, 0.8
-    (x0, y0), (x1, y1) = ax.transData.transform([
-        (np.interp(a0, alphas, t_full), a0), (np.interp(a1, alphas, t_full), a1)])
-    mid = 0.7
-    ax.text((np.interp(mid, alphas, t_full) + np.interp(mid, alphas, t_partial)) / 2, mid,
-            "2: + full cooperation", rotation=np.degrees(np.arctan2(y1 - y0, x1 - x0)),
-            rotation_mode="anchor", **ink)
+        line = np.c_[np.array(edge) * width, np.linspace(0, height, len(alphas))]
+        near = np.full(t.shape, np.inf)
+        for start, end in zip(line, line[1:]):  # distance to each segment of the boundary
+            along = np.clip((point - start) @ (end - start) / np.sum((end - start) ** 2), 0, 1)
+            near = np.minimum(near, np.linalg.norm(point - start - along[..., None] * (end - start),
+                                                   axis=-1))
+        distances.append(near)
+    fade = np.ones(t.shape)
+    for d in distances:
+        x = np.clip(d / FADE, 0, 1)
+        fade *= x * x * (3 - 2 * x)  # smoothstep
+    share = (shares[region] * (EDGE + (1 - EDGE) * fade))[..., None]
+    ax.imshow(share * colors[region] + 1 - share, extent=(0, 1, alphas[0], alphas[-1]),
+              origin="lower", aspect="auto", zorder=0)
+    for edge in (t_full, t_partial):
+        ax.plot(edge, alphas, color="#444444", lw=0.8, marker="o", ms=2.5, clip_on=False)
+    # Labels inside the regions; the middle band is too narrow, so its label points into it.
+    ink = dict(fontsize=8.5, color="#444444", ha="center", va="center")
+    ax.text(0.17, 0.78, "defection only", **ink)
+    ax.text(0.8, 0.6, "+ partial (11/18)", **ink)
+    mid = 0.82
+    band = (np.interp(mid, alphas, t_full) + np.interp(mid, alphas, t_partial)) / 2
+    ax.annotate("+ full cooperation", xy=(band, mid), xytext=(0.45, 0.9),
+                arrowprops=dict(arrowstyle="-", color="#444444", lw=0.8, shrinkA=2,
+                                shrinkB=0), **ink)
     ax.set_xlim(0, 1)
     ax.set_ylim(alphas[0], alphas[-1])
     ax.set_xticks(np.linspace(0, 1, 6))

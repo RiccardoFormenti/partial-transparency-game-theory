@@ -1,0 +1,222 @@
+{
+  "zoo": "body8",
+  "side": "floor",
+  "family": "syntactic",
+  "game": "g09",
+  "points": [
+    {
+      "t": 0.6,
+      "alpha": 0.9
+    },
+    {
+      "t": 0.59,
+      "alpha": 0.9
+    },
+    {
+      "t": 0.58,
+      "alpha": 0.9
+    },
+    {
+      "t": 0.57,
+      "alpha": 0.9
+    },
+    {
+      "t": 0.33,
+      "alpha": 0.8
+    },
+    {
+      "t": 0.32,
+      "alpha": 0.8
+    },
+    {
+      "t": 0.31,
+      "alpha": 0.8
+    },
+    {
+      "t": 0.3,
+      "alpha": 0.8
+    }
+  ],
+  "bots": [
+    "CooperateBot",
+    "CupodBot",
+    "DBot",
+    "DefectBot",
+    "DupocBot",
+    "EBot",
+    "OBot",
+    "TitForTatBot"
+  ],
+  "payoffs": {
+    "T": "3",
+    "R": "2",
+    "P": "0",
+    "S": "-1"
+  },
+  "A": [
+    [
+      "2",
+      "2",
+      "-1",
+      "-1",
+      "-1",
+      "-1",
+      "-1",
+      "2"
+    ],
+    [
+      "2",
+      "0",
+      "2",
+      "0",
+      "0",
+      "2",
+      "0",
+      "2"
+    ],
+    [
+      "3",
+      "2",
+      "0",
+      "-1",
+      "-1",
+      "-1",
+      "-1",
+      "0"
+    ],
+    [
+      "3",
+      "0",
+      "3",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "3",
+      "0",
+      "3",
+      "0",
+      "0",
+      "3",
+      "0",
+      "3"
+    ],
+    [
+      "3",
+      "2",
+      "3",
+      "0",
+      "-1",
+      "2",
+      "-1",
+      "0"
+    ],
+    [
+      "3",
+      "0",
+      "3",
+      "0",
+      "0",
+      "3",
+      "0",
+      "0"
+    ],
+    [
+      "2",
+      "2",
+      "0",
+      "0",
+      "-1",
+      "0",
+      "0",
+      "0"
+    ]
+  ],
+  "settings": {
+    "n_starts": 100,
+    "seed": 20260514,
+    "horizon": 100000.0,
+    "tolerance": 1e-06,
+    "max_distance": 0.0001,
+    "integrator": "LSODA on log-shares",
+    "rtol": 1e-10,
+    "atol": 1e-12
+  },
+  "n_starts": 100,
+  "n_converged": 100,
+  "components": [
+    {
+      "id": 0,
+      "bots": [
+        "CupodBot",
+        "DefectBot",
+        "DupocBot",
+        "OBot"
+      ],
+      "n_starts": 100,
+      "basin": 1.0,
+      "basin_ci95": [
+        0.963006502,
+        1.0
+      ],
+      "shares": {
+        "CupodBot": {
+          "min": 0.005399753,
+          "max": 0.248220531
+        },
+        "DefectBot": {
+          "min": 6.4e-07,
+          "max": 0.352617538
+        },
+        "DupocBot": {
+          "min": 0.215562962,
+          "max": 0.898431836
+        },
+        "OBot": {
+          "min": 0.003103973,
+          "max": 0.699465992
+        }
+      },
+      "supports": [
+        {
+          "bots": [
+            "CupodBot",
+            "DefectBot",
+            "DupocBot",
+            "OBot"
+          ],
+          "n_starts": 99
+        },
+        {
+          "bots": [
+            "CupodBot",
+            "DupocBot",
+            "OBot"
+          ],
+          "n_starts": 1
+        }
+      ],
+      "payoff": {
+        "min": 0.0,
+        "max": 0.0
+      },
+      "cooperation": {
+        "min": 0.0,
+        "max": 0.0
+      },
+      "max_distance": 6.4e-07
+    }
+  ],
+  "unconverged": {
+    "n_starts": 0,
+    "share": 0.0,
+    "share_ci95": [
+      0.0,
+      0.036993498
+    ],
+    "runs": []
+  }
+}
