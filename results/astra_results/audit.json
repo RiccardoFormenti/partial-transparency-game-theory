@@ -1,0 +1,39 @@
+{
+  "family": "behavioral",
+  "zoo": "body8",
+  "side": "floor",
+  "n_grid_points": 707,
+  "n_distinct_games": 62,
+  "n_actual_runs": 62000,
+  "n_distinct_initial_populations": 1000,
+  "n_extreme_equilibria_checked": 1027,
+  "n_components_checked": 93,
+  "seed": 20260514,
+  "max_cooperation_recompute_error": 2.1094237467877974e-15,
+  "max_payoff_recompute_error": 3.3306690738754696e-15,
+  "max_endpoint_deviation_gain": 5.551115123125783e-15,
+  "max_reported_component_distance": 2.3841782437195036e-06,
+  "max_transparency_calibration_error": 2.275120134298536e-05,
+  "all_runs_converged": true,
+  "n_grid_agreements": 707,
+  "n_adjacent_comparisons": 700,
+  "n_selected_decreases": 0,
+  "n_nash_max_decreases": 0,
+  "defection_equilibrium_at_every_positive_alpha": true,
+  "symmetric_and_all_nash_max_agree": true,
+  "all_components_have_constant_cooperation": true,
+  "full_transparency_game": "g01",
+  "pointwise_wilson_1000_of_1000": [
+    0.996173241514445,
+    1.0
+  ],
+  "pointwise_wilson_0_of_1000": [
+    0.0,
+    0.0038267584855551234
+  ],
+  "python": "3.11.11",
+  "numpy": "2.3.3",
+  "pandas": "2.3.3",
+  "scipy": "1.16.2",
+  "matplotlib": "3.10.7"
+}

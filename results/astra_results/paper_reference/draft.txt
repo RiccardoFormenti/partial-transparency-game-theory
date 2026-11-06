@@ -1,0 +1,2657 @@
+SATzilla: Portfolio-based Algorithm Selection for SAT
+LIN XU∗ , University of British Columbia, Canada
+FRANK HUTTER, University of British Columbia, Canada
+HOLGER H. HOOS, University of British Columbia, Canada
+Background: It has been widely observed that there is no single “dominant” SAT solver; instead, different solvers perform
+best on different instances.
+Objectives: Rather than following the traditional approach of choosing the best solver for a given class of SAT instances, we
+aim to make this decision fully automatically, online and on a per-instance basis, with the goal of solving a broad range of
+SAT instances more efficiently in terms of running time.
+Methods: We describe SATzilla, an automated approach for constructing per-instance algorithm portfolios for SAT that use
+so-called empirical hardness models to choose among their constituent solvers. This approach takes as input a distribution of
+problem instances and a set of component solvers, and constructs a portfolio optimizing a given objective function (such as
+mean running time, percent of instances solved, or score in a competition). In this article, we go well beyond earlier versions
+of SATzilla, by making the portfolio construction scalable and completely automated, and improving it by integrating local
+search solvers as candidate solvers, by predicting performance score instead of running time, and by using hierarchical
+hardness models that take into account different types of SAT instances.
+Results: The excellent performance of SATzilla was independently verified in the 2007 SAT Competition, where our SATzilla07
+solvers won three gold, one silver and one bronze medal. We demonstrate the effectiveness of the new techniques introduced
+here in extensive experimental results on data sets including instances from the most recent SAT competition.
+Conclusions: The effectiveness of the SATzilla approach demonstrated in this article suggests that per-instance automated
+algorithm selection may also be possible for NP-hard problems other than SAT. We expect this to pave the way for achieving
+substantial improvements in the state of the art in solving other important problems in AI and beyond.
+JAIR Associate Editor: Insert JAIR AE Name
+JAIR Reference Format:
+Lin Xu, Frank Hutter, and Holger H. Hoos. 2026. SATzilla: Portfolio-based Algorithm Selection for SAT. Journal of Artificial
+Intelligence Research 4, Article 6 (August 2026), 41 pages. doi: 10.1613/jair.1.xxxxx
+
+
+
+
+∗ Corresponding Author.
+
+
+Authors’ Contact Information: Lin Xu, orcid: 0000-0002-2037-3694, xulin730@cs.ubc.ca, University of British Columbia, Vancouver, British
+Columbia, Canada; Frank Hutter, orcid: 0000-0002-2037-3694, hutter@cs.ubc.ca, University of British Columbia, Vancouver, British Columbia,
+Canada; Holger H. Hoos, orcid: 0000-0003-0629-0099, hoos@cs.ubc.ca, University of British Columbia, Vancouver, British Columbia, Canada.
+
+
+                           This work is licensed under a Creative Commons Attribution International 4.0 License.
+
+
+© 2026 Copyright held by the owner/author(s).
+doi: 10.1613/jair.1.xxxxx
+
+                                                Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+     6:2   •   Xu, Hutter, Hoo & Leyton-Brown
+
+
+1    1     Introduction
+2
+     [Papers that are important to cite and to-do:]
+3
+         • use google review product, potentially also worth using https://asta.allen.ai/ (not sure if it’s still SOTA)
+4
+         • Similarity-based cooperative equilibrium, Oesterheld
+5
+         • A commitment folk theorem (cite near tennetholz)
+6
+         • check GT literature
+7
+         • why lean formalization? to make automatic proof search possible with AI agent; see verifiable rewards;
+8
+           see the comment in crtich
+9
+         • cite SCE
+10
+         • emph throughout
+11
+         • references url
+12
+         • repository should have same set of authors
+13
+         • AI usage statement
+14
+         • gpt.zero + pangram
+15
+         • references
+16
+         • acknowledgments
+17
+         • clean the repo
+18
+         • check all the references / allucinations
+19
+         • fix the repo and see the references of the repo
+20
+         • add second repo
+21
+         • finish 52 boxes
+22
+         • last appendix statement check
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+     Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                                                 Satzilla    •   6:3
+
+
+48   2     Theory
+49
+     A game 𝐺 in normal form is a tuple 𝐺 = (𝐼, (𝐴𝑖 , 𝑢𝑖 )𝑖 ∈𝐼 ), where 𝐼 is a finite set of players, 𝐴𝑖 is the finite set of
+50                                             ∏︁
+     actions available to player 𝑖, and 𝑢𝑖 : 𝑗 ∈𝐼 𝐴 𝑗 → R is the utility (payoff) function of player 𝑖. For simplicity’s
+51
+     sake, we restrict our attention to two players games with common action sets, i.e. 𝐼 = {1, 2} and 𝐴 ≔ 𝐴1 = 𝐴2 .
+52
+     As is customary, for player 𝑖 ∈ 𝐼 , let’s denote by −𝑖 the other player and by 𝒂 ∈ 𝐴 × 𝐴 an action profile. Finally,
+53
+     a mixed action for player 𝑖 ∈ 𝐼 is a probability distribution over 𝐴𝑖 = 𝐴, an element of the probability simplex
+54
+     Δ(𝐴); we extend 𝑢𝑖 to Δ(𝐴) × Δ(𝐴) by expectation in the usual way. The (in)famous Prisoner’s Dilemma will
+55
+     serve as the main example throughout.
+56
+57     Example 2.1 (Prisoner’s Dilemma). The Prisoner’s Dilemma is a two-player game 𝐺 PD with common action set
+58   𝐴 = {𝐶, 𝐷 }, cooperate (C) and defect (D), and payoffs
+59
+                                                            𝐶          𝐷
+60
+                                                   𝐶      (𝑅, 𝑅)     (𝑆,𝑇 )                    𝑇 > 𝑅 > 𝑃 > 𝑆,
+61
+                                                   𝐷      (𝑇 , 𝑆)    (𝑃, 𝑃)
+62
+63   where rows are the actions of player 1, columns those of player 2, and each entry lists (𝑢 1, 𝑢 2 ). Since 𝑇 > 𝑅 and
+64   𝑃 > 𝑆, the action 𝐷 strictly dominates 𝐶 for each player. Hence (𝐷, 𝐷) is the unique Nash equilibrium1 of 𝐺 PD ,
+65   even though 𝑅 > 𝑃 means it is Pareto-dominated2 by (𝐶, 𝐶).
+66
+67
+        Add OSGT motivation here (see master thesis) Suppose that, instead of choosing an action directly, each
+68
+     player submits a computer program that takes the other players’ programs as input and outputs an action.
+69
+     Executing these programs produces an action profile. In particular, a player’s program may condition its action
+70
+     on an inspection of the opponents’ programs, and conditional commitments of the form “cooperate if and only
+71
+     if I can verify that you will cooperate” become well-defined objects of strategic choice. This setting was first
+72
+     introduced by Tennenholtz (2004), and later termed Open Source Game Theory (OSGT) by Critch et al. (2022).
+73
+74
+     2.1     Open Source Game Theory
+75   To make precise the meta-game in which players commit to a program instead of directly playing an action,
+76   we build on the formalization and notation of Duclaux et al. (2026) delete. For each player 𝑖 ∈ 𝐼 , denote by Σ𝑖
+77   the finite set of admissible programs. Again, we assume common program sets, that is, Σ ≔ Σ1 = Σ2 , and we
+78   denote by 𝝅 = (𝜋 1, 𝜋2 ) ∈ Σ × Σ a program profile. Each program receives its opponent’s program as input.3
+79   We deliberately leave admissibility under-specified at this point, with the only requirement being that every
+80   admissible program, run on any admissible program (including itself), halts and returns an action. A concrete
+81   choice of Sigma is later given ... [cite lean]
+82
+       Definition 2.2 (Mutually halting program set). A common program set Σ is mutually halting if, for all 𝜋, 𝜋 ′ ∈ Σ,
+83
+     the execution of 𝜋 on input 𝜋 ′ terminates and outputs an action in 𝐴. In this case, the execution function
+84
+     run : Σ × Σ → 𝐴 maps (𝜋, 𝜋 ′ ) to that output, which we write suggestively as run(𝜋 ∥ 𝜋 ′ ).
+85
+86     Moreover, we assume that every constant program is admissible, that is, for each action 𝑎 ∈ 𝐴, the program
+87   that ignores its input and always plays 𝑎 belongs to Σ. With an abuse of notation, we denote this program by 𝑎, so
+88
+     1 A profile 𝒂 ∗ ∈ 𝐴 × 𝐴 is a Nash equilibrium if for all 𝑖 ∈ 𝐼 , all 𝑎               ∗ ∗                     ∗
+89                                                                            𝑖 ∈ 𝐴, 𝑢𝑖 (𝑎𝑖 , 𝑎 −𝑖 ) ≥ 𝑢𝑖 (𝑎𝑖 , 𝑎 −𝑖 ), that is, no player can increase their payoff
+90   by deviating unilaterally.
+     2 For action profiles 𝒂 and 𝒂 ′ ∈ 𝐴 × 𝐴, 𝒂 is said to Pareto-dominate 𝒂 ′ if for all 𝑖 in 𝐼 , 𝑢 (𝒂) ≥ 𝑢 (𝒂 ′ ), with strict inequality for some 𝑗 ∈ 𝐼 .
+                                                                                                    𝑖       𝑖
+91
+     We say that 𝒂 is Pareto-optimal if no other action profile Pareto-dominates it.
+92   3 Throughout, we fix a computable injective encoding of finite program descriptions into N and, when no confusion arises, identify each
+
+93   program with its code.
+94
+                                                           Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+      6:4   •   Xu, Hutter, Hoo & Leyton-Brown
+
+
+95    that run(𝑎∥𝜋) = 𝑎 for all 𝜋 ∈ Σ, and we define the natural embedding 𝐴 ⊆ Σ. This assumption and the mutually
+96    halting condition of Definition 2.2 will be assumed throughout without further mention.
+97      The execution function run induces the outcome map of the game, which to a profile of programs assigns its
+98    played action profile
+99                                                                    (︃                      )︃
+100                       outcome : Σ × Σ → 𝐴 × 𝐴, outcome(𝝅) ≔ run(𝜋 1 ∥𝜋 2 ), run(𝜋2 ∥𝜋 1 ) ,
+101
+102   which assigns to each program profile 𝝅 = (𝜋1, 𝜋2 ) the action profile it produces. Each player utility is then
+103   naturally extended to program profiles,
+                                    𝑈𝑖 : Σ × Σ → R,
+                                                                     (︁            )︁
+104                                                      𝑈𝑖 (𝝅) ≔ 𝑢𝑖 outcome(𝝅) .
+105
+      Since 𝐴 ⊆ Σ and constant programs play their constant    action)︁ against any opponent, the meta-utility 𝑈𝑖 indeed
+106
+      restricts to 𝑢𝑖 on 𝐴 × 𝐴. The tuple 𝐺 prog := 𝐼, (Σ𝑖 , 𝑈𝑖 )𝑖 ∈𝐼 constitutes a normal form game, which we call
+                                                    (︁
+107
+      the program meta-game associated with 𝐺. We are ready to give the definition of equilibrium introduced by
+108
+      Tennenholtz (2004) for program meta-games.
+109
+110     Definition 2.3 (Program Equilibrium). A profile 𝝅 ∗ ∈ Σ × Σ is a Program Equilibrium (PE) of 𝐺 if it is a (pure)
+111   Nash equilibrium of 𝐺 prog , i.e., for every 𝑖 ∈ 𝐼 and every 𝜋𝑖′ ∈ Σ,
+112                                                         𝑈𝑖 (𝜋𝑖∗, 𝜋 −𝑖
+                                                                       ∗
+                                                                          ) ≥ 𝑈𝑖 (𝜋𝑖′, 𝜋 −𝑖
+                                                                                         ∗
+                                                                                            ).
+113
+      More generally, a profile 𝜶 ∗ ∈ Δ(Σ) × Δ(Σ) is a mixed Program equilibrium if it is a mixed Nash equilibrium of
+114
+      𝐺 prog , where we have extended 𝑈𝑖 by expectation.
+115
+116      We first observe that if the underlying game 𝐺 admits a pure Nash equilibrium, then so does the meta-game
+117   𝐺 prog . In fact, it suffices to replace each equilibrium action by the corresponding constant program. All proofs for
+118   this Section are deferred to Appendix A.
+119     Theorem 2.4 (Pure Nash eqilibria are program eqilibria). Let 𝒂 ∗ ∈ 𝐴 × 𝐴 be a pure Nash equilibrium of
+120   𝐺. Then the profile of constant programs 𝒂 ∗ ∈ Σ × Σ is a pure program equilibrium of 𝐺.
+121
+        Existence does not depend on 𝐺 having a pure equilibrium. Since Σ is finite and nonempty (it contains 𝐴), the
+122
+      meta-game 𝐺 prog is a finite normal-form game, so by Nash’s existence theorem (Nash 1950, 1951) it admits a
+123
+      mixed Nash equilibrium 𝜶 ∗ ∈ Δ(Σ) × Δ(Σ). By definition, 𝜶 ∗ is a mixed program equilibrium of 𝐺.
+124
+125      Example 2.5 (Prisoner’s Dilemma, cont’d). By Theorem 2.4, mutual defection (𝐷, 𝐷) remains a program equi-
+126   librium of 𝐺 PD . Unlike in the Prisoner’s Dilemma, however, it is no longer the unique equilibrium outcome, as
+127   Program equilibria can also sustain cooperation. The simplest example is Tennenholtz’s CliqueBot (Tennenholtz
+128   2004), which cooperates if its input is syntactically identical to its own code and defects otherwise. If CliqueBot is
+129   admissible, then the profile (CliqueBot, CliqueBot) yields (𝐶, 𝐶). Any unilateral deviation 𝜋 ′ obtains defection,
+130   so it earns max{𝑆, 𝑃 } = 𝑃 < 𝑅. The proof-based bots introduced by Critch et al. (2022) show that cooperation can
+131   also be achieved by programs robust to syntactic differences, such as DupocBot, which we recall below.
+132      In this paper we focus our attention on proof-based OSGT (Bárász et al. 2014; Critch et al. 2022), where
+133   programs will have access to a formal proof system 𝑆 (e.g. Peano Arithmetic) to be later specified [reference
+134   section] in which to state hypotheses about their opponents and search for proofs of them4 . In particular, we
+135   use a proof search function that searches for a proof of a statement 𝜑 in 𝑆 depending on a program 𝜋 ′ ∈ Σ, of
+136   length at most 𝑘 ∈ N.
+137
+      4 Another paradigm of OSGT is simulation-based OSGT, where programs simulate their opponent instead of formulating mathematical proofs
+138
+      (Cooper et al. 2025; Kovarík et al. 2023; Oesterheld 2019). Simulation and provability are two sides of the same coin, as a successful simulation
+139   is a concrete computational proof of a simulated program’s behavior. Our library of programs thus allows for both kinds of bots. However,
+140   naive mutual simulation can lead to infinite recursion, and thus we focus this paper on proof-based programs.
+141
+      Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                                   Satzilla   •   6:5
+
+
+142
+143
+       def proof_search(𝑘, 𝜋 ′ , 𝜑):
+           # Returns True iff 𝑆 has a proof of 𝜑 about 𝜋 ′ of length at most 𝑘.
+144
+145
+      ref proof section By construction, proof_search(𝑘, 𝜋 ′, 𝜑) returns True exactly when 𝑆 has a proof of 𝜑 of
+146
+      length at most 𝑘. We require throughout that 𝑆 be sound, i.e., whatever 𝑆 proves is true. This implies that if the
+147
+      search succeeds, then 𝜑 holds, and, in particular, 𝜋 ′ actually does what 𝜑 says it does (see section 3.2 for more on
+148
+      this).
+149
+                                                                           prog
+150      Example 2.6 (Prisoner’s Dilemma, cont’d). Consider 𝐺 PD , the program meta-game induced by the Prisoner’s
+151   Dilemma. The canonical example of a provability-based program is DupocBot(𝑘), for 𝑘 ∈ N, “Defect Unless Proof
+152   of Cooperation”, which on an opponent 𝜋 ∈ Σ,
+153
+       def DupocBot(𝑘 ) (𝜋 ):
+154       if proof_search(𝑘, 𝜋, run(𝜋 ∥DupocBot(𝑘 ) ) = 𝐶):
+155            return C
+156       else:
+157            return D
+158
+      The interest of this program lies in the fact that it cooperates with cooperative opponents, but never gets
+159
+      exploited5 , i.e. never cooperates when the other defects. The difficulty in proof-based OSGT lies in the logical and
+160
+      strategic interactions between programs that prove propositions about other programs. As an example, consider
+161
+      the following:
+162
+163
+                                             outcome(DupocBot(𝑘), DupocBot(𝑘))
+164   It is not immediately clear what the result should be. Both programs are identical, and try to prove that their
+165   opponent cooperates. As Critch et al. (2022) put it, we face am apparent circular dependency: “the only way
+166   DupocBot(𝑘) returns 𝐶 is if it first finds a proof in fewer than 𝑘 characters that DupocBot(𝑘) returns 𝐶!” Intuitively,
+167   one might argue that for cooperation to occur, DupocBot(𝑘) would have to prove that DupocBot(𝑘) proves
+168   that DupocBot(𝑘) proves that... and such a proof could not exist in finite length 𝑘. So one might expect that
+169   outcome(DupocBot(k), DupocBot(k)) = (𝐷, 𝐷). Quite surprisingly, this is not the case; Critch et al. (2022) show
+170   that for large 𝑘 the outcome is in fact mutual cooperation (𝐶, 𝐶), using an argument via the Parametric Bounded
+171   Löb Theorem (PBLT) (Critch 2019, Theorem 4.2). For such 𝑘, assuming DupocBot(𝑘) ∈ Σ, the profile (DupocBot(𝑘),
+172   DupocBot(𝑘)) is a program equilibrium; in fact, each player receives 𝑅, and soundness of 𝑆 (hence unexploitability
+173   of DupocBot) rules out unilateral deviations. Thus mutual cooperation is sustained as an equilibrium outcome
+174   of the Prisoner’s Dilemma. In this way, the promise of OSGT is fulfilled, with better payoffs for both players
+175   through transparency.
+176
+         It is important to note how transparency of the opponent’s source code can support program equilibria whose
+177
+      played actions, such as mutual cooperation in the Prisoner’s Dilemma (see Example 2.6), cannot be supported
+178
+      in equilibrium in the underlying game. By conditioning cooperation on verifiable properties of the opponent’s
+179
+      program, players can make cooperation robust to unilateral deviations.
+180
+181   2.2    Partial Transparency
+182
+      The classical framework of open-source game theory described in Section 2.1 assumes full transparency, in that
+183
+      each program receives the opponent’s exact program as input. This is a strong descriptive assumption. In most
+184
+      settings of practical interest, players have only partial access to one another; for instance, a deployed model may
+185
+      be queried as a black box without exposing its weights, or agents may know little more than that they belong
+186
+187   5 This is a simple consequence of soundness of the formal proof system 𝑆 (see CITE).
+
+188
+                                                      Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+      6:6   •   Xu, Hutter, Hoo & Leyton-Brown
+
+
+189   to the same base model family or company. Partial transparency of this kind motivates the diff meta games of
+190   Oesterheld et al. (2023). In these games, each program observes a single scalar measure of similarity between
+191   itself and the opponent’s program and maps this signal to a mixed action. possibly this goes in the intro
+192      More importantly, the literature treats transparency as an exogenous feature of the environment. Instead, we
+193   adopt here the perspective a designer who controls the players’ informational environment, that is, controls
+194   what each program may observe about its opponent, in the spirit of information design cite information
+195   design bergmann. Our motivating application is AI safety. Training protocols (e.g. debate cite) and deployment
+196   protocols (e.g. oversight cite) rely on agents challenging or evaluating one another. If those agents collude and
+197   pursue objectives that conflict with the designer’s preferences, the effectiveness of the above methods might be
+198   undermined6 . This motivates studying partial transparency as a design variable in proof-based OSGT.
+199      As in Section 2.1, we fix a finite base game 𝐺 and a finite set Σ of admissible programs, shared by both players
+200   and common knowledge between them. Now, however, a program no longer receives the opponent’s program as
+201   input. Instead, it receives a probability distribution 𝜇 ∈ Δ(Σ), interpreted as the program’s belief about which
+202   program the opponent has actually submitted. We therefore extend Definition 2.2 to allow beliefs as inputs.
+203
+204
+         Definition 2.7 (Mutually halting program set; belief inputs). A common program set Σ is mutually halting if,
+205
+      for all 𝜋 ∈ Σ and all beliefs 𝜇 ∈ Δ(Σ), the execution of 𝜋 on input 𝜇 terminates and outputs an action in 𝐴. In
+206
+      this case, the execution function run : Σ × Δ(Σ) → 𝐴 maps (𝜋, 𝜇) to that output, which we write suggestively as
+207
+      run(𝜋 ∥ 𝜇).
+208       As in Section 2.1, we assume that every constant program is admissible, that is, for each action 𝑎 ∈ 𝐴, the
+209   program that ignores its input belief and always outputs 𝑎 belongs to Σ. We again denote this program by 𝑎, so
+210   that run(𝑎∥𝜇) = 𝑎 for every 𝜇 ∈ Δ(Σ), and we retain the embedding 𝐴 ⊆ Σ.
+211       The information structure of the game is described by a pair of transparency maps 𝜏 = (𝜏1, 𝜏2 ), where
+212   𝜏𝑖 : Σ → Δ(Σ) for each 𝑖 ∈ 𝐼 . Here 𝜏𝑖 (𝜋) is the belief that player 𝑖’s program receives as input when the opponent
+213   −𝑖 submits 𝜋. Intuitively, 𝜏𝑖 describes what player 𝑖’s program can learn about its opponent, for instance through
+214   black-box queries or knowledge of a shared model family, and it is the object the designer controls. At one
+215   extreme, 𝜏𝑖 (𝜋) = 𝛿 𝜋 recovers the full transparency of Section 2.1; at the other, a constant 𝜏𝑖 reveals nothing, and
+216   player 𝑖 effectively chooses an action of the base game 𝐺; for more details, see Section 2.4.
+217       Naturally extending the definitions of Section 2.1, we define the outcome map induced by the execution
+218   function run and the transparency maps 𝜏,
+219                                                                       (︃                               )︃
+220
+                      outcome : Σ × Σ → 𝐴 × 𝐴, outcome (𝝅) ≔ run(𝜋 1 ∥𝜏1 (𝜋2 )), run(𝜋2 ∥𝜏2 (𝜋 1 )) ,
+                               𝜏                                 𝜏
+221
+222
+      which assigns to each program profile 𝝅 = (𝜋1, 𝜋2 ) the action profile it produces. The only change from Section 2.1
+223
+      is that each program now runs on the belief it receives from the opponent’s code. Each player’s utility is then
+224
+      extended to program profiles by
+225
+                                            𝑈𝑖𝜏 : Σ × Σ → R,
+                                                                          (︁              )︁
+226                                                           𝑈𝑖𝜏 (𝝅) ≔ 𝑢𝑖 outcome𝜏 (𝝅) .
+227                    (︁                )︁
+      The tuple 𝐺 𝜏 := 𝐼, (Σ𝑖 , 𝑈𝑖𝜏 )𝑖 ∈𝐼 is a normal-form game, which we call the 𝜏-program meta-game associated with
+228
+      𝐺; the superscript makes its dependence on the transparency maps 𝜏 explicit. Following Definition 2.3, a profile
+229
+      𝝅 ∈ Σ × Σ is a 𝜏-Program Equilibrium (or simply a Program Equilibrium, when 𝜏 is clear from context) if it is a
+230
+      pure Nash equilibrium of 𝐺 𝜏 ; mixed 𝜏-Program Equilibria are defined analogously.
+231
+232   6 By collusion we mean that the agents coordinate on an outcome that benefits them with respect to their own, possibly misaligned, preferences
+233   but that is contrary to the purpose of the protocol. When each agent is individually tempted to report, the interaction is a Prisoner’s Dilemma
+234   and collusion is mutual cooperation.
+235
+      Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                                       Satzilla   •   6:7
+
+
+236     Definition 2.8 (𝜏-Program Equilibrium). A profile 𝝅 ∗ ∈ Σ × Σ is a 𝜏-Program Equilibrium (PE) of 𝐺 if it is a
+237   (pure) Nash equilibrium of 𝐺 𝜏 , i.e., for every 𝑖 ∈ 𝐼 and every 𝜋𝑖′ ∈ Σ,
+238
+239                                                         𝑈𝑖𝜏 (𝜋𝑖∗, 𝜋 −𝑖
+                                                                        ∗
+                                                                           ) ≥ 𝑈𝑖𝜏 (𝜋𝑖′, 𝜋 −𝑖
+                                                                                           ∗
+                                                                                              ).
+240
+241      Theorem 2.9 (Pure Nash eqilibria are 𝜏-program eqilibria). Let 𝜏 be any pair of transparency maps and
+242   let 𝒂 ∗ ∈ 𝐴 × 𝐴. Then the profile of constant programs 𝒂 ∗ ∈ Σ × Σ is a pure 𝜏-Program Equilibrium if and only if 𝒂 ∗ is
+243   a pure Nash equilibrium of 𝐺. In particular, every pure Nash equilibrium of 𝐺 is a 𝜏-Program Equilibrium for every
+244   choice of 𝜏.
+245
+246      More generally, the existence of 𝜏-Program Equilibria does not depend on 𝐺 having a pure equilibrium, as one
+247   can apply Nash’s existence theorem (Nash 1950, 1951) to 𝐺 𝜏 to prove existence of a mixed 𝜏-Program Equilibrium
+248   of 𝐺.
+249
+250   2.3     An Example in the Prisoner’s Dilemma
+251   We now return to our running example, the Prisoner’s Dilemma (Examples 2.1 and 2.6), and illustrate partial
+252   transparency through concrete transparency maps and explicit programs. We assume throughout a common
+253   transparency map 𝜏1 = 𝜏2 for the two players; write 𝜏 for it.
+254                                                                         prog
+         Given a program Bot of the open source Prisoner’s Dilemma 𝐺 PD , we can extend it to a program TauBot of
+255   the meta-game 𝐺 PD , which takes a belief 𝜇 ∈ Δ(Σ) as input. In particular, TauBot runs the decision procedure of
+                        𝜏
+256   Bot against each program in the support of 𝜇 and aggregates the resulting actions. The simplest aggregator is a
+257   threshold rule, where for 𝛼 ∈ [0, 1], cooperate if and only if the 𝜇-mass of the programs against which Bot would
+258   cooperate is at least 𝛼. We give below the example of TauDupoc(𝑘, 𝛼).
+259
+260     def TauDupocBot(𝑘, 𝛼 ) (𝜇 ):
+           mass = 0
+261
+           for 𝜋 ′ in supp(𝜇 ):
+262             if proof_search(𝑘, 𝜋 ′ , run(𝜋 ′ ∥𝛿 TauDupocBot(𝑘,𝛼 ) ) = 𝐶):
+263                   mass = mass + 𝜇 (𝜋 ′ )
+264        if mass ≥ 𝛼:
+265             return C
+           else:
+266
+                return D
+267
+268     Unlike DupocBot(𝑘), TauDupocBot(𝑘, 𝛼) is no longer unexploitable. Soundness of 𝑆 still guarantees that every
+269   program counted in mass cooperates on the point-mass input 𝛿 TauDupocBot(𝑘,𝛼 ) , but for poorly behaved transparency
+270   map 𝜏, the actual opponent need not be one of these programs.
+271     The threshold rule given above is linear in 𝜇 and therefore admits an expected utility representation7 ; non-linear
+272   aggregators, such as the maximum or minimum or a variational functional, capture ambiguity-sensitive behaviour
+273   (Gilboa and Marinacci 2016). We do not explore their properties here.
+274     We conclude the section with examples of transparency maps to which we return in Section. Fix a finite
+275   program library Σ = {𝜋 1, . . . , 𝜋𝑛 } of admissible programs and assume that outcome(𝜋 𝑗 , 𝜋ℓ ) is known for every
+276   ordered pair. We consider here softmax-based transparency maps induced by a pseudo-distance on Σ.
+277
+278
+279
+280   7 This holds on the state space Σ and the larger consequence space {𝐶, 𝐷 } × {0, 1}, and let playing 𝑎 against 𝜋 give the consequence (𝑎, 𝑓 (𝜋 ) ),
+
+281   where 𝑓 (𝜋 ) = 1 if TauBot cooperates on the point-mass input 𝛿 𝜋 and 𝑓 (𝜋 ) = 0 otherwise.
+282
+                                                          Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+      6:8   •   Xu, Hutter, Hoo & Leyton-Brown
+
+
+283      Definition 2.10. Let 𝑑 : Σ × Σ → R ≥0 be a pseudo-distance8 . For a temperature 𝑇 > 0, the transparency map
+284   𝜏𝑑 : Σ → Δ(Σ) is the softmax of −𝑑/𝑇 :
+       𝑇
+
+285                                                                 (︁               )︁
+                                                                exp −𝑑 (𝜋 𝑗 , 𝜋ℓ )/𝑇
+286                                       𝜏𝑑𝑇 (𝜋 𝑗 ) (𝜋ℓ ) := ∑︁𝑛      (︁               )︁ ,           𝜋 𝑗 , 𝜋ℓ ∈ Σ.
+287                                                            𝑚=1 exp −𝑑 (𝜋 𝑗 , 𝜋𝑚 )/𝑇
+288   As is usual, we extend to 𝑇 = ∞ by 𝜏𝑑∞ (𝜋 𝑗 ) = unif Σ and to 𝑇 = 0 by 𝜏𝑑0 (𝜋 𝑗 ) = 𝛿 𝜋 𝑗 , the full transparency of
+289   Section 2.1.
+290
+         A first example is the
+                             (︁ behavioral pseudo-distance,     given by the Hamming distance between outcome rows. For
+291
+      𝜋 ∈ Σ, let row(𝜋) := outcome(𝜋, 𝜋𝑚 )1 𝑚=1 ∈ 𝐴𝑛 be the list of actions played by 𝜋 against the programs of the
+                                                    )︁ 𝑛
+292
+      library, and define
+293
+                                  𝑑 bvr (𝜋 𝑗 , 𝜋ℓ ) := {𝑚 : row(𝜋 𝑗 )𝑚 ≠ row(𝜋ℓ )𝑚 } ∈ {0, . . . , 𝑛}.
+294
+295   This is only a pseudo-distance, since distinct programs may have identical rows. Further examples arise from
+296   syntactic pseudo-distances, such as the tree edit distance between the abstract syntax trees of the programs’
+297   source code, computed with the Zhang-Shasha algorithm cite.
+298      see appendix
+299
+      2.4       When Does Transparency Matter?
+300
+301   Choosing a program rather than an action can alter incentives because a change in one player’s program may
+302   induce a change in her opponent’s response. Suppose, however, that a player can change what her program does
+303   without changing what her opponent observes. In the Prisoner’s Dilemma, for example, replacing a cooperative
+304   program with an indistinguishable program that defects would leave the opponent’s cooperation unchanged,
+305   making the deviation profitable. We say that a player has undetectable deviations if, for every program she might
+306   submit and every input belief it might receive, she can obtain any desired action by substituting a program
+307   that her opponent cannot distinguish from the original. Against a fixed opponent’s program, she can therefore
+308   change her own action while holding the opponent’s action fixed, just as in the base game. In this sense, rational
+309   behaviour in the meta game 𝐺 𝜏 can differ from rational behaviour in the base game 𝐺 only insofar as 𝜏 reveals
+310   something about how programs behave.
+311     Definition 2.11 (Undetectable Deviations). Player 𝑖 ∈ 𝐼 has undetectable deviations if for every 𝜋 ∈ Σ, every
+312   𝜇 ∈ 𝜏𝑖 (Σ), and every 𝑥 ∈ 𝐴 there exists a 𝜌 ∈ Σ such that
+313
+         (1) 𝜌 is indistinguishable from 𝜋 to player −𝑖, that is, 𝜏 −𝑖 (𝜌) = 𝜏 −𝑖 (𝜋);
+314
+         (2) 𝜌 plays 𝑥 on input 𝜇, that is, run(𝜌 ∥𝜇) = 𝑥.
+315
+316      A program of player −𝑖 can condition its action only on the belief it receives, 𝜏 −𝑖 (𝜋𝑖 ), and can therefore reward
+317   or punish player the opponent 𝑖 only through what is revealed by this belief. f 𝑖 has undetectable deviations,
+318   any arbitrary change in 𝑖’s behaviour can be made without changing what −𝑖 observes. Hence no program
+319   of −𝑖 can make its response depend on what 𝑖 actually does9 ; as Theorem 2.12 shows, this implies that the
+320   program meta-game reduces to the base game. This idea is the analogue of the informativeness principle in moral
+321   hazard (Holmström 1979) where an additional signal can improve the optimal contract if and only if it provides
+322   information about the agent’s action beyond what is already observed in the outcome.
+323     Theorem 2.12. Assume both players have undetectable deviations. Then the outcomes of pure 𝜏-program equilibria
+324   are exactly the pure Nash equilibria of 𝐺.
+325
+      8 A pseudometric is a nonnegative, symmetric distance function that is zero from any point to itself and satisfies the triangle inequality.
+326   9 Black-box testing provides a concrete example. If player −𝑖 observes only how player 𝑖’s program behaves on a set of test inputs, then 𝑖 can
+327   deviate undetectably at every input outside this set. Testing can therefore deter opportunistic behavior only if the inputs a program faces in
+328   the actual interaction cannot be distinguished from test inputs. This the concern we face with evaluation awareness in AI systems.
+329
+      Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                                        Satzilla   •   6:9
+
+
+330       The two extreme transparency structures illustrate the result. If 𝜏 −𝑖 is constant, so that player −𝑖 observes
+331   nothing about 𝑖’s program, then player 𝑖 trivially has undetectable deviations (using the 𝑥-constant program).
+332   When 𝜏 is constant, Theorem 2.12 shows that the outcomes of pure 𝜏-PE are exactly the pure Nash equilibria of
+333   𝐺; in this case, each player effectively chooses an action of the base game. On the other hand, full transparency,
+334   𝜏𝑖 (𝜋) = 𝛿 𝜋 , recovers the open-source setting of Section 2.1. There neither player has undetectable deviations10 ,
+335   and program equilibria can sustain outcomes that are not Nash equilibria of 𝐺, such as mutual cooperation in the
+336   Prisoner’s Dilemma (Example 2.6).
+337       By varying the transparency map 𝜏, we thus obtain a family of games ranging from the base game 𝐺 to the fully
+338   transparent meta-game 𝐺 prog of Tennenholtz (2004). At one extreme, programs receive no information about their
+339   opponents; at the other, they can condition their behaviour on the opponent’s exact code. Throughout this family,
+340   Theorem 2.9 shows that every pure Nash equilibrium of 𝐺 remains a program equilibrium, giving the inclusion
+341   NE ⊆ PE. Whether the sets of program equilibria, or their induced outcomes, vary monotonically in 𝜏 under a
+342   suitable order on transparency maps is a further question we do not approach here. Greater transparency may
+343   allow programs to detect and respond to deviations that would otherwise go unnoticed, but it also changes the
+344   inputs they receive and hence potentially their behaviour. It is therefore not immediate that outcomes sustained
+345   under one transparency map remain sustainable under a more informative one. For this exercise, the results of
+346   Battigalli et al. (2016) and Formenti (2026) may be useful.
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370   10 Definition 2.11 imposes a simple counting constraint. Fix any 𝜇 ∈ 𝜏 (Σ) and any 𝜋 ∈ Σ. Applying the definition to (𝜋, 𝜇, 𝑥 ) for each 𝑥 ∈ 𝐴
+                                                                            𝑖
+371   yields programs 𝜌𝑥 with 𝜏 −𝑖 (𝜌𝑥 ) = 𝜏 −𝑖 (𝜋 ) and run(𝜌𝑥 ∥ 𝜇 ) = 𝑥, which are distinct for distinct 𝑥. Hence every set of programs that player
+372   −𝑖 cannot distinguish from one another contains at least |𝐴| elements. Since these sets partition Σ and there are |𝜏 −𝑖 (Σ) | of them,
+373                                                                 |𝜏 −𝑖 (Σ) | · |𝐴| ≤ |Σ|.
+374   In particular, if 𝜏 −𝑖 is injective, as under full transparency 𝜏 −𝑖 (𝜋 ) = 𝛿 𝜋 , player 𝑖 does not have undetectable deviations as soon as |𝐴| ≥ 2.
+375   This is consistent with Section 2.1, where program equilibria can induce outcomes that are not Nash equilibria of 𝐺 (Example 2.6).
+376
+                                                          Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+      6:10   •    Xu, Hutter, Hoo & Leyton-Brown
+
+
+377   3      Proofs and Dupoc vs Cupod
+378
+      Change title
+379
+       Write a short intro to the section; mention that we work in the prisoner’s dilemma
+380
+381
+      3.1        The Proof System S
+382
+      Change title
+383
+         We now fix the formal system 𝑆 in which programs search for proofs about their opponents’ behavior. Critch
+384
+      et al. (2022, Appendix B) work with an unspecified extension of Peano Arithmetic (PA) that is only required to
+385
+      satisfy a list of efficiency assumptions (recalled in Appendix cite). We instead fix a concrete system, which we
+386
+      later formalize in Lean 4 in Section cite.
+387
+388
+          Definition 3.1 (The proof system 𝑆). The proof system 𝑆 consists of the following three components.
+389
+390
+          (S1) Language. LAct is the language of arithmetic {0, 1, +, ·, <} extended by two constant symbols 𝑐𝐶 and 𝑐 𝐷 ,
+391
+               one per action cooperate 𝐶 and defect 𝐷;
+392
+          (S2) Theory. 𝑇Act consists of Peano Arithmetic together with the action axiom
+393
+                                                     (𝑐𝐶 = 0 ∧ 𝑐 𝐷 = 1) ∨ (𝑐𝐶 = 1 ∧ 𝑐 𝐷 = 0),
+394
+395            stated together with its transpose, obtained by simultaneously exchanging 𝑐𝐶 and 𝑐 𝐷 11 ;
+396       (S3) Proofs. For a sentence 𝜑 of LAct , a proof of 𝜑 is a derivation of 𝜑 from 𝑇Act in a standard first-order calculus.
+397            Its length is the number of symbols it contains. We write ⊢ 𝜑 if 𝜑 has a proof, and ⊢𝑘 𝜑 if it has a proof of
+398            length at most 𝑘 ∈ N.
+399
+400      The action axiom, together with its transpose, is the only axiom of 𝑇Act beyond those of PA. It states that 𝑐𝐶
+401   and 𝑐 𝐷 denote the numbers 0 and 1, in one of the two possible orders, without specifying which. Consequently,
+402   in every model M of 𝑇Act , the pair (𝑐𝐶M , 𝑐 𝐷M ) is either (0 M , 1 M ), which we call the standard reading, or (1 M , 0 M ),
+403   the swapped reading. Conversely, every model of PA becomes a model of 𝑇Act under either reading of the two
+404   constants. Hence the models of 𝑇Act are exactly the models of PA equipped with one of the two readings.
+405      A delicate point, familiar to readers versed in logic, deserves discussion. This paper uses two distinct systems
+406   to prove statements. The first is 𝑆, the formal proof system used by the programs; a call to proof_search(𝑘, ·, 𝜑)
+407   determines whether 𝜑 has a proof in 𝑆 of length at most 𝑘. The second is the metatheory, the system in which we
+408   reason in, "ordinary" mathematics in this Section and Lean in Section cite. Table 1 collects the notation we use
+409   for the rest of the paper. We write □𝑘 𝜑 for the arithmetical sentence asserting that some number codes a proof of
+410   𝜑 in 𝑆 of length at most 𝑘. By contrast, ⊢𝑘 𝜑 denotes the assertion, made in the metatheory, that such a proof
+411   exists. These are related by ⊢𝑘 𝜑 ⇐⇒ N |= □𝑘 𝜑.12 Thus, □𝑘 𝜑 expresses bounded provability within the language
+412   of 𝑆, whereas ⊢𝑘 𝜑 asserts bounded provability in our discussion of 𝑆. We give an example of three statements
+413   that must not be confused; ⊬𝑘 𝜑 says that 𝜑 has no proof of length at most 𝑘; ⊢𝑘 ¬𝜑 says that its negation has
+414   such a proof; and ⊢ ¬□𝑘 𝜑 says that 𝑆 proves that no such proof of 𝜑 exists. By soundness, the second and the
+415   third implies the first. The first does not, in general, imply the second, as failure to find a proof of 𝜑 does not
+416   amount to finding a proof of its negation. For fixed 𝑘 and 𝜑, a failed search can itself be proven in 𝑆, but the proof
+417   need not have length at most 𝑘. This distinction between a search failing and its failure being provable within
+418   the same budget is the subject of Section cite.
+419
+420   11 Including the transpose as an axiom ensures that transposition preserves proof length without requiring additional derivation steps. As
+421   defined in Definition 3.2, the transpose is obtained by simultaneously exchanging 𝑐𝐶 and 𝑐 𝐷 .
+      12 Equivalently, of any model M of 𝑇 .
+422                                       Act
+423
+      Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                                        Satzilla   •   6:11
+
+
+424   Table 1. Notation for bounded provability and truth. The sentence □𝑘 𝜑 belongs to the language of 𝑆; the assertions ⊢𝑘 𝜑 and
+425   |= 𝜑 are made in the metatheory.
+426
+427                                     Notation      Meaning
+428
+                                        □𝑘 𝜑          A sentence expressing provability in 𝑆 within budget 𝑘
+429
+                                        ⊢𝑘 𝜑          A proof of 𝜑 in 𝑆 of length at most 𝑘 exists
+430                                     |= 𝜑          𝜑 is true in N under the standard reading
+431
+432
+433
+      3.2     The mathematics behind the outcomes
+434
+435   With the formal system in place, programs can reason about their opponent’s behavior using the formalism
+436   defined by 𝑆. The system alone, however, does not tell us much about the actual reasoning, only it’s language. We
+437   now present some of the mathematical tools underlying the proofs; partly to show how reasoning in 𝑆 actually
+438   proceeds, and partly because the results themselves are worth seeing. The same tools also yield results beyond
+439   those of Critch et al. (2022): they settle several of their open problems and refute one of their examples. In what
+440   follows, we state the general ideas and leave the precise definitions, outcomes and proofs in Appendix B.
+441      A fundamental property in our system 𝑆 is that proved statements are true, i.e that 𝑆 is sound (Proposition B.1).
+442   Soundness yields both positive and negative results: positively, it shows that DupocBot is unexploitable (Proposi-
+443   tion B.3; see also the discussion in Example ref); negatively, since 𝑆 proves only true statements, a false hypothesis
+444   has no proof of any length, so any search for one fails (e.g. Proposition B.2).
+445      Complementary to soundness, we have completeness: if a statement is true for any model of 𝑆, then 𝑆 should
+446   be able to prove it (Theorem B.4 and Corollary B.5). This gives us for instance that DupocBot and CooperateBot
+447   mutually cooperate (Proposition B.6).
+448      Soundness and completeness, however, both presuppose that we can judge whether a hypothesis is true inde-
+449   pendently of the search for its proof. This fails when programs reason about each other, e.g., when DupocBot(𝑘)
+450   faces itself, its hypothesis is true only if its own search succeeds (example 2.6). Such self-fulfilling hypotheses are
+451   resolved by Löb’s theorem (Löb 1955), a core theorem (Critch 2019) in mathematical logic at the heart of Critch
+452   et al. (2022)’s results. We state it as Theorem B.7 and re-derive the surprising result of DupocBot’s self cooperation
+453   (Theorem B.8). Beyond self-cooperation, Löb’s theorem resolves several of Critch et al.’s open problems and
+454   refutes their Example 5.3(a) (Appendix B.3).
+455
+456   3.3     Transposition and DupocBot vs. CupodBot
+457   Aside the well-known tools from above, we introduce a new technique, which makes use of the inherent syntactic
+458   symmetry between the two actions 𝐶 and 𝐷 in programs playing the Prisoner’s dilemma. The transposition
+459   between the two actions allows us to prove a standing open-problem in the field, the outcome of DupocBot vs.
+460   CupodBot13 . For all proofs and additional details for this section, refer to Appendix B.2.
+461      The two action constants play symmetric roles in 𝑆, suggesting that exchanging them should transform any
+462   proof into another (transposed) proof of the same length. Note that the programs considered here make no
+463   reference to payoffs, the semantic content of a game, so this symmetry concerns the syntax of the programs and
+464   the proof system. We make this idea precise in the following definition.
+465
+466
+        Definition 3.2 (Transposition). Let 𝜑 be a formula of 𝑆. We define the transpose T 𝜑 to be the formula obtained
+467
+      by replacing every occurrence of 𝑐𝐶 by 𝑐 𝐷 and, simultaneously, every 𝑐 𝐷 by 𝑐𝐶 .
+468
+469   13 It is also Critch et al. (2022)’s open problem 3
+
+470
+                                                            Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+      6:12   •   Xu, Hutter, Hoo & Leyton-Brown
+
+
+471      Since T touches only constants, it commutes with every logical symbol,
+472
+                                T (¬𝜑) = ¬ T 𝜑,             T (𝜑 → 𝜓 ) = T 𝜑 → T𝜓,                     T (∀𝑥 𝜑) = ∀𝑥 T 𝜑,
+473
+474   and it is an involution T T 𝜑 = 𝜑. With this definition in mind, we have the following result.
+475      Theorem 3.3. For every sentence 𝜑 of 𝑆 and every budget 𝑘 ∈ N,
+476
+477
+                                                                ⊢𝑘 𝜑      ⇐⇒       ⊢𝑘 T 𝜑.
+478      Naturally, we want to extend transposition to the program’s source code itself.
+479
+480
+        Definition 3.4 (Transposed program). For a program 𝜋, the transposed program T 𝜋 is obtained by exchanging
+481
+      the actions 𝐶 and 𝐷 everywhere in the source of 𝜋, including inside the hypotheses it searches for.
+482     The transpose of DupocBot(𝑘) is “Cooperate Unless Proof Of Defection”, T DupocBot = CupodBot, given
+483   below (using the notation of Section cite):
+484
+       def CupodBot(𝑘 ) (𝜋 ):
+485
+          if proof_search(𝑘, 𝜋, run(𝜋 ∥CupodBot(𝑘 ) ) = 𝐷):
+486
+               return D
+487       else:
+488            return C
+489
+490      With both definitions above, we can arrive at the first symmetry result we have for our programs. For programs
+491   𝜋, 𝜋 ′ and an action 𝑎, write Plays(𝜋, 𝜋 ′, 𝑎) for the sentence of 𝑆 stating that 𝜋, run on the source of 𝜋 ′ , plays 𝑎.
+492   The two transpositions agree on such sentences.
+493      Theorem 3.5. For all programs 𝜋, 𝜋 ′ and every action 𝑎,
+494
+495
+                                                   T Plays(𝜋, 𝜋 ′, 𝑎) = Plays(T 𝜋, T 𝜋 ′, T 𝑎).
+496   where T 𝑎 is the other action.
+497
+        I would add Thm 22 and cor 23 (combining them) as a result here. Then 3.6 follows.
+498
+        We now apply Theorem 3.3 and Theorem 3.5 directly to DupocBot and CupodBot, obtaining the outcome
+499
+      conjectured in Open Problem 3 of Critch et al. (2022) for our proof system 𝑆.
+500
+501      Theorem 3.6 (DupocBot against CupodBot). For every 𝑘 ∈ N,
+502
+                                          (︁                       )︁
+                                   outcome DupocBot(𝑘), CupocBot(𝑘) = (𝐷, 𝐶).
+503
+504      Let us give here a sketch of the proof. The two bots search for transposed hypotheses with the same proof-
+505   length budget. By Theorem 3.3 and 3.5 their proof searches therefore succeed or fail together. If both succeed,
+506   DupocBot cooperates and CupocBot defects. But success of DupocBot’s search means it has proved that CupocBot
+507   cooperates, contradicting soundness. Thus both searches fail, and the bots take their default actions, i.e., DupocBot
+508   defects and CupocBot cooperates. The full proof is given in the appendix.
+509
+510
+511
+512
+513
+514
+515
+516
+517
+      Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                                 Satzilla   •   6:13
+
+
+518   4   Lean
+519
+      The previous section shows that finding the outcomes of open-source programs involves Löbian, self-referential
+520
+      arguments that are laborious and error-prone by hand, and the complexity of these proofs grows with the
+521
+      complexity of the programs involved. To make this analysis more systematic and robust, we formalize the theory
+522
+      in a formal verification language, both to ensure outcomes are machine-checked, and to facilitate the search for
+523
+      new proofs using automated tools, such as large language models. For these reasons, we choose Lean 4 (Moura
+524
+      and Ullrich 2021), a proof assistant language that has gained traction in the literature for its ability to sustain
+525
+      large-scale formalizations of modern mathematics, such as the community-owned mathlib library (The mathlib
+526
+      Community 2020) and the ongoing Lean proof of Fermat’s Last Theorem (Buzzard and Taylor 2025), and for its
+527
+      role as the de facto target language for learning-based theorem proving, from the miniF2F benchmark and the
+528
+      LeanDojo toolchain (Yang et al. 2023; Zheng et al. 2022) to the current generation of neural provers (Hubert et al.
+529
+      2026; Lin et al. 2026; Ren et al. 2025; Wang et al. 2025).
+530
+         Our formalization rests on four commitments, to make it robust against possible silent failures and inconsis-
+531
+      tencies. First, we do not introduce any axioms, apart from Lean’s three standard axioms (propext, Quot.sound,
+532
+      Classical.choice), so no project-specific assumptions are made. Second, all our theorems are sorry-free,
+533
+      ensuring that every statement is entirely proved. Third, the outcomes the rest of the paper consumes follow fixed,
+534
+      typed templates, enforced by the build in both directions: a linter checks that every tagged theorem is a literal
+535
+      instance of its template whose programs and outcome match its name, and a census checks the converse, that
+536
+      every outcome proved in the library is tagged. Every pair of programs used in our experiments is thereby either
+537
+      a proved cell or an explicitly stated open case (section 4.2). Finally, we build upon the Foundation library (Saito
+538
+      and Noguchi 2026), which is to the best of our knowledge the most advanced library in mathematical logic. On
+539
+      top of their work, we add the nine definitions of table 5, that constitute our trust base. The result, overviewed in
+540
+      fig. 1, is a kernel-checked Lean 4 formalization14 of open-source game theory under full and partial transparency.
+541
+         The remainder of this section is organized as follows. Section 4.1 walks through the three components of the
+542
+      mechanization: programs, outcomes and the system 𝑆 itself, built on Foundation. Section 4.2 then turns to the
+543
+      open cells and traces them to a single open problem of bounded proof complexity: whether 𝑇 can show, within
+544
+      budget 𝑘, that a given false sentence has no proof of length at most 𝑘.
+545
+         Maybe you want a small a paragraph of literature review of previous formalziations of logic and
+546
+      game theory and open source game theory
+547
+548      Formalizations of logic and game theory. Mechanized logic and mechanized game theory have
+549   each a history, but they have rarely met. Gödel’s incompleteness theorems were formalized by
+550   oconnor2005godel in Coq and paulson2014godel in Isabelle; the Foundation library (Saito and Noguchi
+551   2026) we build on brings first-order arithmetic, Gödel coding and provability logic to Lean 4, and is to our
+552   knowledge the most complete such development. On the game-theoretic side, vestergaard2006nash
+553   and leroux2009nash formalized the existence of sequential Nash equilibria in Coq, the ForMaRE
+554   project verified auction mechanisms in Isabelle (caminati2015auctions; kerber2016mechanized), and
+555   mixedmatched2023 formalizes normal-form games and Nash equilibria in Lean 4. None of these treats
+556   programs as strategies. The one formalization of open-source game theory we are aware of is the
+557   ModalAgents development of berns2026faf, a Lean 4 mechanization of the modal agents of Bárász et al.
+558   (2014): agents are formulas of the provability logic GL, outcomes are GL fixed points, and provability
+559   is unbounded. Its results are therefore of the PA+1 kind discussed in section 4.2, and it has no proof
+560
+561
+562
+      14 The code is available at see ref https://github.com/ColombanD/open-source-game-theory (Duclaux 2026).
+563
+564
+                                                     Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+      6:14   •    Xu, Hutter, Hoo & Leyton-Brown
+
+
+565                                           linter · census · coverage, inside lake build
+566
+                                                                         𝜏-rows
+567
+                                                          partial transparency: 𝜏-programs and
+568                                                       their rows, one theorem per program
+569                                                                          source lift
+570                                                                          𝜏 -programs are programs;
+                                                                             rows proved from cells
+571                                                                          and floors
+572                                                               Outcome matrix table 7
+573                                                      full transparency: one theorem per pair,
+574                                                                floors as dichotomies
+575                                                                                 proof methods section 3.2
+                                                                                    soundness, completeness,
+576
+                                                                                    bounded Löb
+577
+                                                         Trusted base: nine definitions [table 5]
+578
+                                                          theory 𝑇Act , proof length |𝑑 |, box □𝑘 ,
+579                                                         program codes, guard, evaluator
+580
+581
+582                                                       Foundation (Saito and Noguchi 2026)
+583                                            first-order arithmetic, Gödel coding, the proof predicate
+584
+585   Fig. 1. Re-cref the correct parts. Architecture of the formalization. Everything shown is checked by the Lean kernel and
+586   rests on no project axioms: the Foundation library is trusted as a library, nine definitions form the trusted base, and every
+587   outcome cell (blue, full transparency) and every 𝜏-row (orange, partial transparency) is a theorem or an explicitly stated open
+588
+      case, validated by a linter, a census and a coverage check inside lake build.
+589
+590
+      lengths, no evaluator and no transparency. The present work is, to our knowledge, the first mechaniza-
+591
+      tion of resource-bounded open-source game theory: a proof system with costed derivability conditions,
+592
+      programs that run, and outcomes stated as theorems about those runs.
+593
+594   4.1        Details of the Mechanization
+595
+      Mention time taken to prove this - see resolution post on singularities Open-source game theory rests
+596
+      upon three main components that we expose here: programs, outcomes, and the formal system 𝑆. Definitions,
+597
+      statements and architecture were designed by the authors, but most of the Lean source was written by LLM
+598
+      agents built on Anthropic’s Claude Opus and Fable model families (Anthropic 2026a,b). Nothing an agent writes
+599
+      is trusted: every theorem is checked by the Lean kernel, and the axiom census, the linter and the coverage
+600
+      checks run inside the build. The provenance of a proof is therefore irrelevant to its validity, which is the point of
+601
+      mechanizing.
+602
+603   4.1.1 Programs. Programs in our implementation are modeled using the inductive type Prog15 . Two Prog
+604   constructors are important here: .search for logical reasoning, and .sim for simulation. Below, we present two
+605   examples: our proof-based running example, Dupoc, and a simulation-based program, DBot.
+606
+       def DupocBot (k : Nat) : Prog :=
+607
+         .search k                                         -- the proof search constructor
+608        (.plays .opp .self Action.C)                    -- hypothesis: opponent plays C against me
+609
+610   15 Prog has ten constructors in total. The seven base constructors all appear in the two examples; three extend it to partial transparency (??)
+
+611
+      Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                                    Satzilla   •   6:15
+
+
+612         (.const Action.C)                           -- proof found: cooperate
+613         (.const Action.D)                           -- otherwise: defect
+614
+615    def DBot : Prog :=
+616      .ite                                           -- if-then-else
+617        (.sim .opp (.bot DefectBot))                 -- simulate opponent against DefectBot
+618        Action.C                                     -- test action C
+           (.const Action.D)                            -- if opponent cooperates, defect
+619
+           (.const Action.C)                            -- else, cooperate
+620
+621      The hypothesis a .search looks for is a value of a second inductive type, Formula, which has constructors
+622   stating atomic plays (.plays p q a, “𝑝 plays 𝑎 against 𝑞”, where .self and .opp stand for the two players of
+623   the current match); implications and negations of such statements; a syntactic equality .eq p q, “𝑝 is literally
+624   the program 𝑞”; and the bounded provability operator □𝑘 of section 3.1: .box k 𝜓 , “𝜓 has a proof of length
+625   at most 𝑘”. The three remaining constructors implement partial transparency: .tvote runs the threshold vote
+626   of TauDupocBot(𝑘, 𝛼) over a list of weighted hypotheses, and .sys with .selfIdx bind the mutually recursive
+627   system that two voting programs probing each other require.
+628
+629   4.1.2 Outcomes. As stated in the introduction to this section, outcome theorems (i.e. the per-pair matchups
+630   between programs in the library) follow a strict template to ensure consistency: an outcomeA attribute, and
+631   a fixed statement syntax (see example below). Programs are run by an evaluator EvalGraph n me opp p a,
+632   read “with fuel 𝑛, in the match of me against opp, the program p plays a”. Nested simulation makes termination
+633   non-structural, hence the explicit fuel: a program plays an action if some amount of fuel returns it, and that
+634   action is unique because the evaluator is deterministic and monotone in the fuel. Below is one of the running
+635   example’s cells, stated on the template, whose first argument fixes the budget regime (.universal: at every
+636   budget 𝑘; .eventual: at every sufficiently large 𝑘).16
+637
+       @[outcomeA]
+638    theorem outcome_DupocBot_vs_CupodBot :
+639        OutcomeSpecA .universal (bot DupocBot) (bot CupodBot) (some (.D, .C))
+640    -- unfolds to: ∀ k, DupocBot k plays D against CupodBot k,
+641
+       --             and CupodBot k plays C against DupocBot k
+642
+         Under partial transparency the template is a row vector of all outcomes between a fixed bot and the zoo. The
+643
+      evaluator’s .search clause asks whether a proof of length at most 𝑘 exists, in the formal system 𝑆, defined in
+644
+      section 3.1 and constructed below. This is a bounded search over proof codes, hence decidable in principle but far
+645
+      from feasible: the content of an outcome is carried by its theorem, not by running the programs.
+646
+647   4.1.3 The formal system 𝑆. Perhaps the most interesting mechanization result is the actual formalization of 𝑆, a
+648   language of arithmetic with two action constants, Peano Arithmetic with the action axiom, and proofs measured
+649   by their number of symbols. In lean, we build 𝑆 on top of the Foundation library. We sketch the mechanization
+650   here and leave further details in appendix C.
+651      𝑆 is a theory of arithmetic, so its sentences speak only about natural numbers, since its signature contains
+652   only 0, 1, +, ·, < and the two action constants. For 𝑆 to reason about sentences, proofs and programs, each of
+653   these objects is assigned a natural number, its Gödel code. A statement about proofs or programs then becomes a
+654   statement about numbers, which 𝑆 can express.
+655
+656   16 A careful reader will recognize this example as being the outcome certificate of our headline Dupoc vs Cupod proof. See ?? for more details
+
+657   on the proof’s implementation in Lean.
+658
+                                                        Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+      6:16   •    Xu, Hutter, Hoo & Leyton-Brown
+
+
+659      Furthermore, formulas have no truth value on their own, only in a logical structure. For us, that structure is N
+660   because codes of proofs are actual natural numbers by construction. This lets “some number codes a proof” and
+661   “some proof exists” say the same thing:
+662
+                       ⊢𝑘 𝜑     ⇐⇒         N |= □𝑘 𝜑       ⇐⇒        some derivation of 𝜑 in 𝑇Act has at most 𝑘 symbols,
+663
+664     Proof length. Finally, modeling the length of a proof requires careful accounting. In the Foundation library,
+665   proofs are derivations in a sequent calculus17 . We define the length |𝑑 | of a derivation 𝑑 as its number of symbols,
+666   counted over every node of the tree; the precise count is given in appendix C.
+667
+668   4.2        What 𝑆 Does Not Decide
+669   The tools of section 3.2 show us how to settle certain types of hypotheses of our proof_search function. However,
+670   one kind of hypothesis escapes them: one that is true, but true only because some other search fails. Whether such
+671   a hypothesis is found is a question the tools cannot answer, and one that 𝑆 itself leaves open. This subsection
+672   explains why, and states what we prove instead.
+673      A search of budget 𝑘 fails when no proof of length at most 𝑘 exists. One might expect this failure to be an easy
+674   fact, provable within the same budget 𝑘. To see why it is not, suppose any failed 𝑘-search could be certified within
+675   budget 𝑘: for any hypothesis 𝜑 with else-action 𝑏, ⊬𝑘 𝜑 implies ⊢𝑘 (me plays 𝑏). Then we obtain a contradiction
+676   with the following anti-diagonal program18 :
+677
+        -- "If I can prove that I defect against myself, cooperate"
+678
+        def AntiBot (k : Nat) : Prog :=
+679       .search k
+680         (.plays .self .self Action.D)      -- hypothesis: I play D against myself
+681         (.const Action.C)                  -- proof found: cooperate
+682         (.const Action.D)                  -- otherwise: defect
+683
+        A certificate that a search failed may therefore cost more than the search itself, and nothing in 𝑆 says in general
+684
+      how much more. This matters as soon as one program’s hypothesis depends on another program’s else play.
+685
+      Consider CupodTrollBot, which cooperates with any program except if its opponent is literally CupodBot:
+686
+687     def CupodTrollBot (k : Nat) : Prog :=
+688       .search k
+689         (.eq .opp (CupodBot k)) -- test if opponent is literally CupodBot
+            (.const Action.D)       -- then, defect
+690
+            (.const Action.C)       -- else, cooperate
+691
+692   Against DupocBot, its hypothesis is false, so by soundness its search fails and it cooperates, at every budget.
+693   DupocBot’s hypothesis, “CupodTrollBot plays 𝐶 against me”, is therefore true. But it is true only because
+694   CupodTrollBot’s search failed, and to find it DupocBot needs, within its budget 𝑘, a proof that a search of the
+695   same budget 𝑘 fails: exactly the kind of certificate we just showed is not free. None of our tools in the previous
+696   section decides whether this certificate fits. What we can prove is that the outcome depends on nothing else.
+697   Writing 𝐻𝑘 for “DupocBot’s hypothesis is found within 𝑘”, which we call the hinge, we have for all large 𝑘:
+698
+                                     ¬𝐻𝑘 =⇒ outcome (𝐷, 𝐶)                    and         𝐻𝑘 =⇒ outcome (𝐶, 𝐶).
+699
+      17 A derivation is a tree in which every node carries a sequent, a finite set of formulas read as a disjunction, and every edge is an inference rule.
+700
+701   Foundation’s calculus is one-sided and has the cut rule.
+      18 Indeed, set 𝜑 = (AntiBot plays 𝐷 vs AntiBot) and suppose, for contradiction, that ⊢ 𝜑. Then soundness (proposition B.1) implies that
+                                                                                            𝑘
+702
+      AntiBot defects. However, a provable hypothesis is a found hypothesis, which makes AntiBot take its then branch and play 𝐶. Impossible,
+703   because a program plays only one action. Hence ⊬𝑘 𝜑, so AntiBot takes its else branch and plays 𝐷: the sentence 𝜑 is true. But by the
+704   hypothesis, ⊬𝑘 𝜑 would imply ⊢𝑘 𝜑, a contradiction.
+705
+      Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                           Satzilla   •   6:17
+
+
+706   We call such a cell a floor. For the experiments we use the first branch, the conservative one in which no failure
+707   certificate fits a budget; this is a labelled convention, not a theorem, and section 5 reports which conclusions
+708   depend on it.
+709      The hinge is not an artifact of our encoding. For the simplest floor, DupocBot against DBot, we prove that 𝐻𝑘
+710   is equivalent, up to an additive overhead logarithmic in 𝑘, to 𝑆 proving within its budget a bounded consistency
+711   statement, that a certain false sentence has no proof of length at most 𝑘; the other floors share this shape. Whether
+712   such statements have proofs within 𝑘 is, to our knowledge, open: they cannot be shorter than 𝑘 𝜖 for some 𝜖 > 0
+713   (Pudlák 2017, Thm. 3.1), a bound due to Friedman (unpublished, 1979) and Pudlák (1986), and nothing better is
+714   known. The two answers give different outcomes, so we assume neither. The same obstacle appears, unbounded,
+715   in Bárász et al. (2014), where PrudentBot’s inner check runs in PA+1 because PA cannot certify that its own
+716   search fails. Budgets replace that tower: a self-fulfilling fact is certified within the budget at which it holds,
+717   whereas the failure of a search of budget 𝑘 is a consistency statement about budget 𝑘, and how much budget its
+718   proof needs is the question above.
+719
+720
+721
+722
+723
+724
+725
+726
+727
+728
+729
+730
+731
+732
+733
+734
+735
+736
+737
+738
+739
+740
+741
+742
+743
+744
+745
+746
+747
+748
+749
+750
+751
+752
+                                               Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+      6:18   •    Xu, Hutter, Hoo & Leyton-Brown
+
+
+753   Table 2. The symmetric outcome matrix of the eight-bot library Σ in 𝑆, at a common proof budget 𝑘; a cell gives the row
+754   bot’s certified action first. Cells hold for every sufficiently large 𝑘. Shaded cells represent mutual cooperation (green) and
+755
+      mutual defection (grey). Orange cells‡ rest on the hinge of [cite]; here the value shown is the floor side (the floor guard not
+      provable within budget). Highlighted names (yellow) are empirically unexploitable bots (see CITE for more on this)
+756
+757
+
+
+
+
+                                                                CooperateBot               TitForTatBot
+758
+
+
+                                                                               DefectBot                                       DupocBot   CupodBot
+759
+760
+                                                                                                          DBot   OBot   EBot
+761
+762                                             CooperateBot    CC             CD          CC CD                 CC     CD CC CC
+                                                 DefectBot      DC             DD          DD DC                 DD     DD DD DD
+763
+                                                TitForTatBot    CC             DD          CC DC                 CD     DC CC CC
+764                                             DBot            DC             CD          CD DD                 CD     CD CD‡ CC
+765                                              OBot           CC             DD          DC DC                 DD     DC DD DC‡
+                                                EBot            DC             DD          CD DC                 CD     CC CD‡ CC
+766
+                                                 DupocBot       CC             DD          CC DC‡                DD     DC‡ CC DC
+767
+                                                CupodBot        CC DD CC                                  CC     CD‡    CC     CD         DD
+768
+769
+770   5      Experiments
+771
+      [Better title]
+772
+        [Introduction what we do here]
+773
+        [Give example of the simple prisoner dilemma]
+774
+775   5.1        Full Transparency
+776
+      5.1.1 Program Library. While the results that follow do depend on the choice of the program library Σ, we have
+777
+      taken care to consider several different libraries. Our focus here is on optimal rather than average behavior, so
+778
+      adding dominated bots to a library would leave our results unchanged. Moreover, programs such as DupocBot
+779
+      are provably unexploitable [Cite], which makes it difficult to find programs that outperform them. We start with
+780
+      the base case of full transparency, i.e. of open source game theory; fix a base library Σ = {𝜋1, . . . , 𝜋 𝑁 } containing
+781
+      𝑁 = 8 bots
+782
+783                   Σ = {CooperateBot, CupodBot, DBot, DefectBot, DupocBot, EBot, OBot, TitForTatBot},
+784
+      which is defined in Figure 2.
+785
+        We provide proofs of all outcomes for all pairs of programs in our Lean library [Cite]. These proofs were
+786
+      produced either by hand or by an LLM proof agent that drives the Lean kernel. The agent is built on Anthropic’s
+787
+      Claude Opus and Fable model families (Anthropic 2026a,b) [cite agentic paragraph]. Table 2 summarizes the
+788
+      outcomes.
+789
+        [Explain the zoo plus outcomes plus hinge]
+790
+791   5.1.2 Enumerating Program Equilibria. We are interested in understanding which programs are optimal to play
+792   in equilibrium. To do so, we enumerate all program equilibria of the meta-game 𝐺 prog following the approach
+793   described in Appendix D.1. For the eight-program library Σ at full transparency, we find 21 extreme equilibria
+794   across three connected components (Table 8).
+795      The three components differ in the probability of mutual cooperation. In the first, every equilibrium yields
+796   (𝐶, 𝐶) with probability one and gives each player the cooperative payoff 𝑅 = 2. In the second, there is a single
+797   symmetric equilibrium in which each player mixes over CooperateBot, OBot, and EBot. Mutual cooperation
+798   occurs with probability 11/18, and each player’s expected payoff is 3/2. In the third, every equilibrium yields
+799
+      Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                                Satzilla   •   6:19
+
+
+800
+               Σ + trolls + implication provers                                                                               𝑁 = 12
+801
+802
+                 Σ + trolls                                                                                                 𝑁 = 10
+803
+804               Σ                                                                                                        𝑁 =8
+805
+806                   non-provers + DupocBot                                                                             𝑁 =7
+807                                                       always C
+                   CooperateBot𝑏,𝑐       constant
+808
+809                DefectBot𝑏,𝑐          constant         always D
+810
+                   TitForTatBot          simulation       C iff the opponent cooperates with CooperateBot
+811
+812                DBot𝑎                 simulation       D iff the opponent cooperates with DefectBot
+813
+                                                          C iff the opponent cooperates with both CooperateBot
+814                OBot𝑎                 simulation
+                                                          and DefectBot
+815
+816
+                                                          C iff the opponent defects against DefectBot and cooper-
+                   EBot𝑎                 simulation
+                                                          ates with CooperateBot or with its simulated self; else D
+817
+818                DupocBot𝑏             searcher (𝑘)     C iff ⊢𝑘 (opponent plays C vs me)
+819
+820
+                   CupodBot𝑏             searcher (𝑘)     D iff ⊢𝑘 (opponent plays D vs me)
+821
+822
+823
+                   CupodTrollBot         searcher (𝑘)     D iff ⊢𝑘 (opponent = CupodBot 𝑘); else C
+824
+825                DupocTrollBot         searcher (𝑘)     D iff ⊢𝑘 (opponent = DupocBot 𝑘); else C
+826
+827
+                   CIMCIC𝑏               searcher (𝑘)     C iff ⊢𝑘 (I play C vs opponent → opponent plays C vs me)
+828
+829                DIMDID𝑏               searcher (𝑘)     D iff ⊢𝑘 (I play D vs opponent → opponent plays D vs me)
+830
+831
+832
+      Fig. 2. The bots used in this paper, as four nested libraries. The Σ library (filled) is the one analysed throughout; the two
+      outer zoos are the robustness extensions. Provenance: 𝑎 transcribed from the LessWrong source-visible tournament (Mennen
+833
+      2013); 𝑏 Critch et al. (2022); 𝑐 Bárász et al. (2014), bounded here; untagged bots are ours. Further bots, not analysed here, are
+834
+      in the repository (Duclaux 2026).
+835
+836
+837   (𝐷, 𝐷) with probability one and gives each player a payoff of zero. Thus the unique equilibrium outcome of
+838   the underlying Prisoner’s Dilemma persists, but the game also sustains cooperative and partially cooperative
+839   equilibria, which are not present in the base Prisoner’s dilemma. The role of DupocBot is clearest in self-play. In
+840   the underlying game, a player facing cooperation can gain by defecting. In the meta-game, switching programs
+841   can also change the opponent’s action. In particular, DupocBot cooperates with itself, but a player who switches
+842   to a program that defects against it faces defection in return. This makes mutual cooperation a best response
+843   for both players in DupocBot self-play. The enumeration shows that its role extends beyond self-play in that in
+844   every fully cooperative equilibrium of this library, both players assign probability at least 1/9 to DupocBot. No
+845   other program appears in every such equilibrium.
+846
+                                                    Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+      6:20   •    Xu, Hutter, Hoo & Leyton-Brown
+
+
+847   5.1.3 Equilibrium Selection under Replicator Dynamics. Which of these equilibria does a population reach when
+848   programs that earn higher payoffs become more common? We study this question using replicator dynamics
+849   in 𝐺 prog . Programs are matched at random, and a program’s share grows whenever its expected payoff exceeds
+850   the population mean. For the eight-program library Σ at full transparency, every trajectory we simulated from
+851   a uniformly drawn initial population converged to the fully cooperative component (Appendix E.2). Thus,
+852   although mutual defection remains an equilibrium outcome, in every run the dynamics converge to a cooperative
+853   equilibrium. The initial composition influenced which programs persisted in the long run. In some populations
+854   only DupocBot was played at equilibrium, while in most it coexisted with both CooperateBot and TitForTatBot.
+855   Every pairing among these three programs yields mutual cooperation, so each earns 𝑅 = 2 regardless of its
+856   population share. Thus, under full transparency, all sampled populations reached the same cooperative outcome
+857   through different mixtures of programs. A positive share of population of DupocBot is required for cooperation
+858   in equilibrium.
+859      The above findings replicated across every program library shown in Figure 2 (see Appendix E.3).
+860
+861   5.2        Partial Transparency
+862   [add a decent intro to what we do here]
+863     [repeat definitions of behavioral and syntactic families]
+864     [add family calibration]
+865     [move across transparency levels]
+866     [see table 9 and 10]
+867     [see Appendix in other paper]
+868
+869
+870
+871
+872
+873
+874
+875
+876
+877
+878
+879
+880
+881
+882
+883
+884
+885
+886
+887
+888
+889
+890
+891
+892
+893
+      Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                   Satzilla   •   6:21
+
+
+894   6   Conclusion
+895
+896
+897
+898
+899
+900
+901
+902
+903
+904
+905
+906
+907
+908
+909
+910
+911
+912
+913
+914
+915
+916
+917
+918
+919
+920
+921
+922
+923
+924
+925
+926
+927
+928
+929
+930
+931
+932
+933
+934
+935
+936
+937
+938
+939
+940
+                       Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+      6:22   •   Xu, Hutter, Hoo & Leyton-Brown
+
+
+941   7      Introduction
+942
+      This document describes the revised LATEXtemplate used by JAIR starting with volume 83 (2025). The template is
+943
+      based on ACM’s consolidated article template, introduced in 2017, which provides a consistent LATEX style for
+944
+      use across ACM publications, and incorporates accessibility and metadata-extraction functionality necessary for
+945
+      future Digital Library endeavors. JAIR adopted this template because 1) our old template was sadly out of date
+946
+      and we wanted a reliable, maintained template and 2) the journal is now distributed as part of the ACM library
+947
+      (though JAIR remains an independent, open-access journal published by AI Access Foundation, freely available
+948
+      at https://jair.org). Note that much of the functionality described below relates to ACM publications in general,
+949
+      rather than the specific template used by JAIR.
+950
+         If you are new to publishing with JAIR or ACM, this document provides a guide to the process of preparing
+951
+      your work for publication. If you have published with ACM before, this document provides insight and instruction
+952
+      into more recent changes to the article template.
+953
+         The “acmart” document class can be used to prepare articles for any ACM publication — conference or journal,
+954
+      and for any stage of publication, from review to final “camera-ready” copy, to the author’s own version, with
+955
+      very few changes to the source.
+956
+         The article template’s documentation, available at https://www.acm.org/publications/proceedings-template,
+957
+      has a complete explanation of commands and tips for effective use.
+958
+959
+960   8      Template Overview
+961   This document will explain the major features of the document class. For further information, the LATEX User’s
+962   Guide is available from https://www.acm.org/publications/proceedings-template.
+963      There are a number of template parameters that modify some part of the applied template style. A complete list
+964   of these parameters can be found in the LATEX User’s Guide.
+965      Frequently-used parameters, or combinations of parameters, include:
+966
+967          • review: Includes line numbers.
+968          • authorversion: Produces a version of the work suitable for posting by the author.
+969          • screen: Produces colored hyperlinks.
+970
+971       This document uses the following string as the first command in the source file:
+972
+973   \documentclass{jair}
+974
+975
+976
+      9      Modifications
+977   Modifying the template — including but not limited to: adjusting margins, typeface sizes, line spacing, paragraph
+978   and list definitions, and the use of the \vspace command to manually adjust the vertical spacing between
+979   elements of your work — is not allowed.
+980      Your document will be returned to you for revision if modifications are discovered.
+981
+982
+      10      Typefaces
+983
+984
+      The “acmart” document class requires the use of the “Libertine” typeface family. Your TEX installation should
+985
+      include this set of packages. Please do not substitute other typefaces. The “lmodern” and “ltimes” packages
+986
+      should not be used, as they will override the built-in typeface families.
+987
+      Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                            Satzilla   •   6:23
+
+
+988    11   Title Information
+989
+       The title of your work should use capital letters appropriately - https://capitalizemytitle.com/ has useful rules for
+990
+       capitalization. Use the title command to define the title of your work. If your work has a subtitle, define it with
+991
+       the subtitle command. Do not insert line breaks in your title.
+992
+         If your title is lengthy, you must define a short version to be used in the page headers, to prevent overlapping
+993
+       text. The title command has a “short title” parameter:
+994
+995
+         \title[short title]{full title}
+996
+       12   Authors and Affiliations
+997
+998    Each author must be defined separately for accurate metadata identification. As an exception, multiple authors
+999    may share one affiliation. Authors’ names should not be abbreviated; use full first names wherever possible.
+1000   Include authors’ e-mail addresses whenever possible. Including ORCID information for each author is highly
+1001   recommended. It can be done using a command like \orcid{0000-0002-2037-3694}.
+1002     Grouping authors’ names or e-mail addresses, or providing an “e-mail alias,” as shown below, is not acceptable:
+1003     \author{Brooke Aster, David Mehldau}
+1004     \email{dave,judy,steve@university.edu}
+1005     \email{firstname.lastname@phillips.org}
+1006
+         The authornote and authornotemark commands allow a note to apply to multiple authors — for example, if
+1007
+       the first two authors of an article contributed equally to the work.
+1008
+         You must define a shortened version of the list of authors to be used in the page headers. The following
+1009
+       command should be placed just after the last \author{} definition:
+1010
+         \renewcommand{\shortauthors}{Xu, Hutter, Hoo \& Leyton-Brown}
+1011
+1012
+       13   Rights Information
+1013
+1014   JAIR articles are freely available, and a copyright notice referencing the Creative Commons CC BY license is
+1015   included in the template. This copyright notice should be included in all JAIR articles.
+1016
+1017
+       14   Sectioning Commands
+1018   Your work should use standard LATEX sectioning commands: section, subsection, subsubsection, and paragraph.
+1019   They should be numbered; do not remove the numbering from the commands.
+1020     Simulating a sectioning command by setting the first word or words of a paragraph in boldface or italicized
+1021   text is not allowed.
+1022
+1023   15   Tables
+1024   The “acmart” document class includes the “booktabs” package — https://ctan.org/pkg/booktabs — for preparing
+1025   high-quality tables.
+1026      Table captions are placed above the table.
+1027      Because tables cannot be split across pages, the best placement for them is typically the top of the page nearest
+1028   their initial cite. To ensure this proper “floating” placement of tables, use the environment table to enclose the
+1029   table’s contents and the table caption. The contents of the table itself must go in the tabular environment, to be
+1030   aligned properly in rows and columns, with the desired horizontal and vertical rules. Again, detailed instructions
+1031   on tabular material are found in the LATEX User’s Guide.
+1032      Immediately following this sentence is the point at which Table 3 is included in the input file; compare the
+1033   placement of the table here with the table in the printed output of this document.
+1034
+                                                Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+       6:24   •   Xu, Hutter, Hoo & Leyton-Brown
+
+
+1035                                                   Table 3. Frequency of Special Characters
+1036
+1037                                       Non-English or Math             Frequency          Comments
+1038
+                                                       Ø                   1 in 1,000 For Swedish names
+1039
+                                                       𝜋                      1 in 5   Common in math
+1040
+                                                       $                      4 in 5   Used in business
+1041
+                                                       Ψ12                 1 in 40,000 Unexplained usage
+1042
+1043
+1044
+1045     Always use midrule to separate table header rows from data rows, and use it only for this purpose. This enables
+1046   assistive technologies to recognise table headers and support their users in navigating tables more easily.
+1047
+1048   16     Math Equations
+1049   You may want to display math equations in three distinct styles: inline, numbered or non-numbered display.
+1050   Each of the three are discussed in the next sections. We note that JAIR authors are discouraged from using
+1051   sophisticated mathematical notation in the abstract (especially notation that is difficult to reproduce in vanilla
+1052   HTML), since the abstract will also be formatted in HTML on the JAIR web site.
+1053
+1054   16.1       Inline (In-text) Equations
+1055
+       A formula that appears in the running text is called an inline or in-text formula. It is produced by the math
+1056
+       environment, which can be invoked with the usual \begin . . . \end construction or with the short form
+1057
+       $ . . . $. You can use any of the symbols and structures, from 𝛼 to 𝜔, available in LATEX Lamport:LaTeX; this
+1058
+       section will simply show a few examples of in-text equations in context. Notice how this equation: lim𝑛→∞ 𝑥 = 0,
+1059
+       set here in in-line math style, looks slightly different when set in display style. (See next section).
+1060
+1061
+       16.2       Display Equations
+1062
+1063
+       A numbered display equation—one set off by vertical space from the text and centered horizontally—is produced
+1064
+       by the equation environment. An unnumbered display equation is produced by the displaymath environment.
+1065
+          Again, in either environment, you can use any of the symbols and structures available in LATEX; this section
+1066
+       will just give a couple of examples of display equations in context. First, consider the equation, shown as an
+1067
+       inline equation above:
+1068                                                                       lim 𝑥 = 0                                  (1)
+                                                                           𝑛→∞
+1069
+1070   Notice how it is formatted somewhat differently in the displaymath environment. Now, we’ll enter an unnum-
+1071   bered equation:
+1072                                                       ∞
+                                                          ∑︁
+1073                                                          𝑥 +1
+1074                                                                       𝑖=0
+1075   and follow it with another numbered equation:
+1076
+                                                                      ∞           ∫ 𝜋+2
+1077
+                                                                     ∑︁
+                                                                           𝑥𝑖 =           𝑓                           (2)
+1078                                                                               0
+                                                                     𝑖=0
+1079
+1080   just to demonstrate LATEX’s able handling of numbering.
+1081
+       Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                                    Satzilla   •   6:25
+
+
+1082   17    Figures
+1083
+       The “figure” environment should be used for figures. One or more images can be placed within a figure. If your
+1084
+       figure contains third-party material, you must clearly identify it as such, as shown in the example below.
+1085
+1086
+1087   Fig. 3. 1907 Franklin Model D roadster. Photograph by Harris & Ewing, Inc. [Public domain], via Wikimedia Commons.
+1088   (https://goo.gl/VLCRBB).
+1089
+1090      Your figures should contain a caption which describes the figure to the reader.
+1091      Figure captions are placed below the figure.
+1092      Every figure should also have a figure description. These descriptions convey what is in the image to someone
+1093   who cannot see it. They are also used by search engine crawlers for indexing images, and when images cannot be
+1094   loaded.
+1095      A figure description must be unformatted plain text less than 2000 characters long (including spaces). Figure
+1096   descriptions should not repeat the figure caption – their purpose is to capture important information
+1097   that is not already provided in the caption or the main text of the paper. For figures that convey important
+1098   and complex new information, a short text description may not be adequate. More complex alternative descriptions
+1099   can be placed in an appendix and referenced in a short figure description. For example, provide a data table
+1100   capturing the information in a bar chart, or a structured list representing a graph. For additional information
+1101   regarding how best to write figure descriptions and why doing this is so important, please see https://www.acm.
+1102   org/publications/taps/describing-figures/.
+1103
+1104   18    Acknowledgments
+1105   Identification of funding sources and other support, and thanks to individuals and groups that assisted in the
+1106   research and the preparation of the work should be included in an acknowledgment section, which is placed just
+1107   before the reference section in your document.
+1108      This section has a special environment:
+1109
+          \begin{acks}
+1110
+          ...
+1111
+          \end{acks}
+1112
+1113
+       so that the information contained therein can be more easily collected during the article metadata extraction
+1114
+       phase, and to ensure consistency in the spelling of the section heading.
+1115
+          Authors should not prepare this section as a numbered or unnumbered \section; please use the “acks”
+1116
+       environment.
+1117
+       Acknowledgments
+1118
+1119
+       FILL + AI STATEMENT USE
+1120
+       References
+1121
+       Anthropic. Sept. 2026a. System Card: Claude Fable 5.1 & Claude Mythos 5.1. Tech. rep. Published September 1, 2026. Accessed 2026-09-18.
+1122
+          Anthropic, (Sept. 2026).
+1123   Anthropic. May 2026b. System Card: Claude Opus 4.8. Tech. rep. Published May 28, 2026. Accessed 2026-09-18. Anthropic, (May 2026).
+1124   D. Avis, G. D. Rosenberg, R. Savani, and B. Von Stengel. 2010. “Enumeration of Nash equilibria for two-player games.” Economic theory, 42, 1,
+1125      9–37.
+1126   M. Bárász, P. F. Christiano, B. Fallenstein, M. Herreshoff, P. LaVictoire, and E. Yudkowsky. 2014. “Robust Cooperation in the Prisoner’s
+          Dilemma: Program Equilibrium via Provability Logic.” CoRR, abs/1401.5577. arXiv: 1401.5577.
+1127
+1128
+                                                        Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+       6:26   •   Xu, Hutter, Hoo & Leyton-Brown
+
+
+1129   P. Battigalli, S. Cerreia-Vioglio, F. Maccheroni, and M. Marinacci. 2016. “Analysis of information feedback and selfconfirming equilibrium.”
+1130       Journal of Mathematical Economics, 66, 40–51.
+1131   K. Buzzard and R. Taylor. 2025. FLT: An Ongoing Lean Formalization of Fermat’s Last Theorem. https://github.com/ImperialCollegeLondon/FLT.
+           Imperial College London. Blueprint: https://imperialcollegelondon.github.io/FLT/blueprint/. (2025).
+1132
+       E. Cooper, C. Oesterheld, and V. Conitzer. 2025. “Characterising Simulation-Based Program Equilibria.” In: Thirty-Ninth AAAI Conference on
+1133       Artificial Intelligence, Thirty-Seventh Conference on Innovative Applications of Artificial Intelligence, Fifteenth Symposium on Educational
+1134       Advances in Artificial Intelligence, AAAI 2025, Philadelphia, PA, USA, February 25 - March 4, 2025. Ed. by T. Walsh, J. Shah, and Z. Kolter.
+1135       AAAI Press, 13735–13744. doi:10.1609/AAAI.V39I13.33501.
+1136   A. Critch. 2019. “A parametric, Resource-Bounded Generalization of löB’s Theorem, and a robust Cooperation criterion for Open-Source
+           Game Theory.” J. Symb. Log., 84, 4, 1368–1381. doi:10.1017/JSL.2017.42.
+1137
+       A. Critch, M. Dennis, and S. Russell. 2022. “Cooperative and uncooperative institution designs: Surprises and problems in open-source game
+1138       theory.” CoRR, abs/2208.07006. arXiv: 2208.07006. doi:10.48550/ARXIV.2208.07006.
+1139   C. Duclaux. 2026. Open-Source Game Theory in Lean 4. https://github.com/ColombanD/open-source-game-theory. Lean 4 library and analysis
+1140       code. Git commit <hash>, accessed <date>. (2026).
+1141   C. Duclaux, R. Formenti, P. Cobben, B. Schölkopf, and Z. Jin. 2026. “Proving Your Way to Cooperation: Formalizing Proof-Based Open Source
+           Game Theory in Lean.” In: 3rd AI for Math Workshop: Toward Self-Evolving Scientific Agents.
+1142
+       H. B. Enderton. 2001. A Mathematical Introduction to Logic. (2nd ed.). Academic Press.
+1143   R. Formenti. 2026. “Self-Confirming Equilibrium under Model Misspecification.” arXiv, arXiv.2610.35692. https://arxiv.org/abs/2610.35692
+1144       eprint: 2610.35692.
+1145   I. Gilboa and M. Marinacci. 2016. “Ambiguity and the Bayesian paradigm.” In: Readings in formal epistemology: Sourcebook. Springer, 385–439.
+1146   K. Gödel. 1930. “Die Vollständigkeit der Axiome des logischen Funktionenkalküls.” Monatshefte für Mathematik und Physik, 37, 1, 349–360.
+           doi:10.1007/BF01696781.
+1147
+       J. Hofbauer and K. Sigmund. 2003. “Evolutionary game dynamics.” Bulletin of the American mathematical society, 40, 4, 479–519.
+1148   B. Holmström. 1979. “Moral hazard and observability.” The Bell journal of economics, 74–91.
+1149   T. Hubert et al.. 2026. “Olympiad-level formal mathematical reasoning with reinforcement learning.” Nature, 651, 8106, 607–613. isbn:
+1150       1476-4687. doi:10.1038/s41586-025-09833-y.
+1151   M. Jansen. 1981. “Maximal Nash subsets for bimatrix games.” Naval research logistics quarterly, 28, 1, 147–152.
+       V. Kovarík, C. Oesterheld, and V. Conitzer. 2023. “Game Theory with Simulation of Other Players.” In: Proceedings of the Thirty-Second
+1152
+           International Joint Conference on Artificial Intelligence, IJCAI 2023, 19th-25th August 2023, Macao, SAR, China. ijcai.org, 2800–2807. doi:10.24
+1153       963/IJCAI.2023/312.
+1154   Y. Lin et al.. 2026. “Goedel-Prover-V2: Scaling Formal Theorem Proving with Scaffolded Data Synthesis and Self-Correction.” In: The Fourteenth
+1155       International Conference on Learning Representations, ICLR 2026, Rio de Janeiro, Brazil, April 23-27, 2026. Ed. by C. Vondrick, B. Hariharan,
+1156       C. Raffel, L. Pinto, D. Yang, and A. Faust. proceedings.iclr.cc. https://proceedings.iclr.cc/paper%5C_files/paper/2026/hash/13e8be77982beb7
+           3d7ed0bbf122f9f3c-Abstract-Conference.html.
+1157
+       M. H. Löb. 1955. “Solution of a Problem of Leon Henkin.” The Journal of Symbolic Logic, 20, 2, 115–118. doi:10.2307/2266895.
+1158   A. Mennen. 2013. Prisoner’s dilemma tournament results. LessWrong. (2013). https://www.lesswrong.com/posts/QP7Ne4KXKytj4Krkx/prisone
+1159       r-s-dilemma-tournament-results-0.
+1160   L. d. Moura and S. Ullrich. 2021. “The Lean 4 Theorem Prover and Programming Language.” In: Automated Deduction – CADE 28. Ed. by
+1161       A. Platzer and G. Sutcliffe. Springer International Publishing, Cham, 625–635. isbn: 978-3-030-79876-5.
+       J. F. Nash. 1950. “Equilibrium points in n-person games.” Proceedings of the National Academy of Sciences, 36, 1, 48–49.
+1162
+       J. F. Nash. 1951. “Non-Cooperative Games.” Annals of Mathematics, 54, 2, 286–295.
+1163   C. Oesterheld. 2019. “Robust program equilibrium.” Theory and Decision, 86, 1, 143–159.
+1164   C. Oesterheld, J. Treutlein, R. B. Grosse, V. Conitzer, and J. N. Foerster. 2023. “Similarity-based cooperative equilibrium.” In: Advances in
+1165       Neural Information Processing Systems 36: Annual Conference on Neural Information Processing Systems 2023, NeurIPS 2023, New Orleans, LA,
+1166       USA, December 10 - 16, 2023. Ed. by A. Oh, T. Naumann, A. Globerson, K. Saenko, M. Hardt, and S. Levine.
+       P. Pudlák. 2017. “Incompleteness in the finite Domain.” Bull. Symb. Log., 23, 4, 405–441. doi:10.1017/BSL.2017.32.
+1167
+       P. Pudlák. 1986. “On the length of proofs of finitistic consistency statements in first order theories.” In: Logic Colloquium ’84. Studies in Logic
+1168       and the Foundations of Mathematics. Vol. 120. Ed. by J. Paris, A. Wilkie, and G. Wilmers. Elsevier, 165–196. doi:https://doi.org/10.1016/S00
+1169       49-237X(08)70462-2.
+1170   Z. Z. Ren et al.. 2025. DeepSeek-Prover-V2: Advancing Formal Mathematical Reasoning via Reinforcement Learning for Subgoal Decomposition.
+1171       (2025). https://arxiv.org/abs/2504.21801 arXiv: 2504.21801 (cs.CL).
+       S. Saito and M. Noguchi. 2026. Formalized Formal Logic: A Mechanized Proof Library for Mathematical Logic. Lean 4 library, Apache-2.0. Git
+1172
+           commit a77e4e9, accessed September 2, 2026. (2026). https://github.com/FormalizedFormalLogic/Foundation.
+1173   M. Tennenholtz. 2004. “Program equilibrium.” Games and Economic Behavior, 49, 2, 363–373.
+1174
+1175
+       Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                                      Satzilla   •   6:27
+
+
+1176   The mathlib Community. 2020. “The Lean Mathematical Library.” In: Proceedings of the 9th ACM SIGPLAN International Conference on Certified
+1177      Programs and Proofs (CPP 2020), 367–381. doi:10.1145/3372885.3373824.
+1178   H. Wang et al.. 2025. “Kimina-Prover Preview: Towards Large Formal Reasoning Models with Reinforcement Learning.” CoRR, abs/2504.11354.
+          arXiv: 2504.11354. doi:10.48550/ARXIV.2504.11354.
+1179
+       K. Yang, A. M. Swope, A. Gu, R. Chalamala, P. Song, S. Yu, S. Godil, R. J. Prenger, and A. Anandkumar. 2023. “LeanDojo: Theorem Proving
+1180      with Retrieval-Augmented Language Models.” In: Advances in Neural Information Processing Systems 36: Annual Conference on Neural
+1181      Information Processing Systems 2023, NeurIPS 2023, New Orleans, LA, USA, December 10 - 16, 2023. Ed. by A. Oh, T. Naumann, A. Globerson,
+1182      K. Saenko, M. Hardt, and S. Levine.
+1183   K. Zhang and D. Shasha. 1989. “Simple fast algorithms for the editing distance between trees and related problems.” SIAM journal on computing,
+          18, 6, 1245–1262.
+1184
+       K. Zheng, J. M. Han, and S. Polu. 2022. “miniF2F: a cross-system benchmark for formal Olympiad-level mathematics.” In: International
+1185      Conference on Learning Representations. https://openreview.net/forum?id=9ZPegFuFTFv.
+1186
+1187   A    Proofs
+1188
+       This Appendix collects all proofs from the main paper.
+1189
+1190     Proof of Theorem 2.4. Let 𝒂 ∗ ∈ 𝐴 ×𝐴 be a NE of 𝐺. Fix a player 𝑖 and a deviation 𝜋𝑖 ∈ Σ. Since the opponent’s
+1191   constant program always outputs 𝑎 ∗−𝑖 , let 𝑏𝑖 := run(𝜋𝑖 ∥ 𝑎 ∗−𝑖 ) ∈ 𝐴. Then
+1192
+                                             𝑈𝑖 (𝜋𝑖 , 𝑎 ∗−𝑖 ) = 𝑢𝑖 (𝑏𝑖 , 𝑎 ∗−𝑖 ) ≤ 𝑢𝑖 (𝑎𝑖∗, 𝑎 ∗−𝑖 ) = 𝑈𝑖 (𝑎𝑖∗, 𝑎 ∗−𝑖 ),
+1193
+1194   where the inequality follows because 𝒂 ∗ is a Nash equilibrium of 𝐺. Thus no unilateral program deviation is
+1195   profitable, and 𝒂 ∗ is a Program equilibrium.                                                             □
+1196
+          Proof of Theorem 2.9. Since constant programs ignore their input, run(𝑎∥𝜇) = 𝑎 for all 𝑎 ∈ 𝐴 and 𝜇 ∈ Δ(Σ).
+1197
+       In particular,(︁ outcome𝜏 (𝒂)︁ ∗ ) = 𝒂 ∗ , and hence 𝑈𝑖𝜏 (𝒂 ∗ ) = 𝑢𝑖 (𝒂 ∗ ) for each 𝑖 ∈ 𝐼 . Fix 𝑖 ∈ 𝐼 and a deviation 𝜋𝑖′ ∈ Σ, and
+1198
+       set 𝑏 := run 𝜋𝑖′ ∥ 𝜏𝑖 (𝑎 ∗−𝑖 ) ∈ 𝐴. The opponent’s constant program outputs 𝑎 ∗−𝑖 whatever belief 𝜏 −𝑖 (𝜋𝑖′ ) it receives,
+1199
+       so
+1200
+                                                           𝑈𝑖𝜏 (𝜋𝑖′, 𝑎 ∗−𝑖 ) = 𝑢𝑖 (𝑏, 𝑎 ∗−𝑖 ).
+1201
+1202
+          (⇐) If 𝒂 ∗ is a Nash equilibrium of 𝐺, then 𝑢𝑖 (𝑏, 𝑎 ∗−𝑖 ) ≤ 𝑢𝑖 (𝒂 ∗ ) = 𝑈𝑖𝜏 (𝒂 ∗ ), so 𝜋𝑖′ is not a profitable deviation. Since
+1203
+       𝑖 and 𝜋𝑖′ were arbitrary, 𝒂 ∗ is a 𝜏-Program Equilibrium.
+1204
+          (⇒) For every 𝑏 ∈ 𝐴, the constant program 𝑏 belongs to Σ and satisfies 𝑈𝑖𝜏 (𝑏, 𝑎 ∗−𝑖 ) = 𝑢𝑖 (𝑏, 𝑎 ∗−𝑖 ). If 𝒂 ∗ is a
+1205
+       𝜏-Program Equilibrium, then 𝑢𝑖 (𝑏, 𝑎 ∗−𝑖 ) ≤ 𝑈𝑖𝜏 (𝒂 ∗ ) = 𝑢𝑖 (𝒂 ∗ ) for all 𝑖 ∈ 𝐼 and 𝑏 ∈ 𝐴, that is, 𝒂 ∗ is a Nash equilibrium
+1206
+       of 𝐺.                                                                                                                             □
+1207     Theorem A.1. Assume player 𝑖 ∈ 𝐼 has undetectable deviations. If 𝝅 ∈ Σ × Σ is a pure 𝜏-program equilibrium
+1208   with outcome 𝒂 then 𝑎𝑖 ∈ BR𝑖 (𝑎 −𝑖 ), where BRi is the best-response correspondence defined by
+1209
+1210
+                                                        BR𝑖 (𝑎 −𝑖 ) ≔ argmax𝑎′ ∈𝐴𝑢𝑖 (𝑎 ′, 𝑎 −𝑖 ).
+1211   Moreover, if both players have undetectable deviations, then the outcomes of pure 𝜏-program equilibria are exactly
+1212   the pure Nash equilibria of 𝐺.
+1213
+1214
+         Proof of Theorem A.1, hence of Theorem 2.12. Let 𝝅 be a pure 𝜏-PE with outcome 𝒂. Define 𝜇 ≔ 𝜏𝑖 (𝜋 −𝑖 )
+1215
+       and let 𝑥 ∈ BR𝑖 (𝑎 −𝑖 ). Let 𝜌 satisfy Definition 2.11 for (𝜋𝑖 , 𝜇, 𝑥). Then by 2.
+1216                                                                   run(𝜌 ∥𝜇) = 𝑥,
+1217
+       and by 1.
+1218
+                                        run(𝜋 −𝑖 ∥𝜏 −𝑖 (𝜌)) = run(𝜋 −𝑖 ∥𝜏 −𝑖 (𝜋𝑖 )) = 𝑎 −𝑖 .
+1219
+1220
+       The equilibrium condition then implies that
+1221                               𝑢𝑖 (𝑎𝑖 , 𝑎 −𝑖 ) = 𝑈𝑖𝜏 (𝝅) ≥ 𝑈𝑖𝜏 (𝜌, 𝜋 −𝑖 ) = 𝑢𝑖 (𝑥, 𝑎 −𝑖 ) = max𝑎′ ∈𝐴𝑢𝑖 (𝑎 ′, 𝑎 −𝑖 ).
+1222
+                                                          Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+       6:28   •   Xu, Hutter, Hoo & Leyton-Brown
+
+
+1223   Finally, if both players can mimic, applying this argument to 𝑖 = 1 and 𝑖 = 2 shows that 𝒂 is a pure Nash
+1224   equilibrium of 𝐺. Conversely, by Theorem 2.9, every pure Nash equilibrium of 𝐺 is the outcome of a pure 𝜏-PE,
+1225   namely the profile of the corresponding constant programs.                                                 □
+1226
+1227   B      Formal Tools and Theoretical Results in Open-Source Game Theory
+1228
+       This appendix states in detail the definitions, outcomes and proofs sketched in Section 3.2 (Appendix B.1), then
+1229
+       presents our corrections and progress on Critch et al. (2022) (Appendix B.3).
+1230
+1231
+       B.1        Mathematical Tools and Outcomes
+1232
+1233
+       We take our running example DupocBot and illustrate each tool using concrete matchups of this bot.
+1234
+       B.1.1 Soundness. The first important property of our system 𝑆 is that it is sound, i.e. that proved statements are
+1235
+       true.
+1236
+1237      Proposition B.1 (Soundness). Every sentence provable in 𝑆 is true in N under the standard reading. In particular,
+1238   ⊢𝑘 𝜑 implies |= 𝜑, for every budget 𝑘.
+1239
+1240      Proof. N satisfies the axioms of Peano Arithmetic, and under the standard reading, where 𝑐𝐶 is 0 and 𝑐 𝐷 is
+1241   1, it satisfies the action axiom. So N is a model of 𝑇Act , and every sentence a theory proves holds in each of its
+1242   models (Soundness of first-order theories; Enderton, 2001, Section 2.5).                                         □
+1243
+1244       Soundness allows us to prove that certain searches must fail, through its contrapositive:
+1245
+1246
+           Proposition B.2. Let DefectBot be the program that always defects. Then for every 𝑘,
+1247
+                                                  outcome(DupocBot(𝑘), DefectBot) = (𝐷, 𝐷)
+1248
+1249      Proof. DefectBot plays 𝐷, so the hypothesis “DefectBot cooperates with me” is false. By the contrapositive
+1250   of Proposition B.1 it has no proof, of any length. The search of DupocBot(𝑘) therefore fails at every budget, and
+1251   DupocBot(𝑘) plays its default, 𝐷.                                                                               □
+1252
+1253     Soundness also ensures robustness of certain programs, which we call unexploitable: a program 𝜋 such
+1254   that no opponent 𝜋 ′ can get outcome(𝜋, 𝜋 ′ ) = (𝐶, 𝐷). Programs that cooperate only after proving that their
+1255   opponent cooperates with it have this property, because the proof they found guarantees (thanks to soundness)
+1256   the opponent’s cooperation.
+1257
+1258       Proposition B.3. DefectBot, DupocBot and CIMCIC19 are unexploitable.
+1259
+1260
+         Proof. DefectBot never cooperates, so there is nothing to show.
+1261
+         DupocBot(k) only cooperates if proof_search(k, opp, 𝜑) succeeded for 𝜑 = “opp cooperates against
+1262
+       DupocBot(k)”. So if DupocBot cooperates, that means 𝜑 is provable, which means its opponent playing 𝐶 is true,
+1263
+       by soundness.
+1264
+         Similarly, CIMCIC(k) only cooperates if proof_search(k, opp, 𝜑) succeeded for 𝜑 = “if CIMCIC(k) cooper-
+1265
+       ates, then opp cooperates against it”. If CIMCIC cooperates, that means 𝜑 is provable, thus true, by soundness.
+1266
+       Since the premise of 𝜑 is also true, then the conclusion must be true, i.e its opponent plays 𝐶.             □
+1267
+       19 cref the table of programs with def
+1268
+1269
+       Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                             Satzilla   •   6:29
+
+
+1270   B.1.2 Completeness. Naturally, besides soundness, 𝑆 is complete: if a statement is true for any model of 𝑆, then
+1271   𝑆 should be able to prove it:
+1272
+1273
+         Theorem B.4 (Completeness, Gödel (1930)). Let 𝑇 be a first-order theory and 𝜑 a sentence of its language. If 𝜑
+1274
+       holds in every model of 𝑇 , then 𝑇 proves 𝜑. In other words, if 𝑀 |= 𝜑 for every model 𝑀 of 𝑇 , then 𝑇 ⊢ 𝜑, with no
+1275
+       bound on the length of the proof.
+1276
+         For 𝑆, checking every model reduces to checking the two readings of the constants:
+1277
+1278     Corollary B.5 (Completeness over the two readings). A sentence that holds in every model of Peano
+1279   Arithmetic, under both the standard and the swapped reading of 𝑐𝐶 and 𝑐 𝐷 , is provable in 𝑆.
+1280
+          Proof. By the action axiom, the models of 𝑇Act are exactly the models of Peano Arithmetic equipped with one
+1281
+       of the two readings. The claim is therefore Theorem B.4 applied to 𝑇Act .                                    □
+1282
+1283      This second tool allows us to show that a search succeeds. Against CooperateBot, the program that always
+1284   plays 𝐶, the hypothesis of DupocBot(𝑘) is true, and DupocBot(𝑘) cooperates exactly if it has a proof of length at
+1285   most 𝑘. Instead of producing such a proof, we show that one exists, using Gödel’s completeness theorem:
+1286
+1287     Proposition B.6. For all sufficiently large 𝑘,
+1288
+                                         outcome(DupocBot(𝑘), CooperateBot) = (𝐶, 𝐶)
+1289
+1290      Proof. Let 𝐺 [𝑘] be the hypothesis “CooperateBot cooperates with DupocBot(𝑘)”. The sentence ∀𝑘 𝐺 [𝑘] holds
+1291   in every model of Peano Arithmetic under both readings: under the standard one it says that a constant program
+1292   plays its constant, and under the swapped one it says the same of the transposed programs. By Corollary B.5, 𝑆
+1293   proves ∀𝑘 𝐺 [𝑘], with a proof of some fixed length 𝑁 . Instantiating it at a given 𝑘 adds the length of the numeral
+1294   of 𝑘, which we can write in logarithmic terms, so ⊢𝑘 𝐺 [𝑘] as soon as 𝑘 exceeds 𝑁 plus this overhead. The search
+1295   of DupocBot(𝑘) then succeeds and it plays 𝐶, as does CooperateBot.                                               □
+1296
+1297      Completeness gives a proof without giving its length. The outcome therefore holds for all 𝑘 above a threshold
+1298   that is shown to exist but is not computed, whereas soundness involves no estimate on lengths and gives outcomes
+1299   at every budget. Every outcome in this paper is of one of these two kinds. Neither, however, handles self-reference.
+1300
+       B.1.3 Löb’s Theorem. When DupocBot(𝑘) faces itself, its hypothesis is true only if its own search succeeds
+1301
+       (example 2.6 ). Neither of the tools above help, because we cannot verify the truthfulness of the hypothesis before
+1302
+       knowing the result of the search. This self-fulfilling fact is directly resolved by Löb’s theorem (Löb 1955), which
+1303
+       we state in its bounded form:
+1304
+1305      Theorem B.7 (Bounded Löb, after Critch (2019); see also Critch et al. (2022), Lemma 3.6). Let 𝜑 [𝑘] be
+1306   a formula of 𝑆 with a single free variable 𝑘. Suppose that, for some 𝑘 1 ∈ N, 𝑆 can verify that 𝜑 [𝑘] is “potentially
+1307   self-fulfilling for large 𝑘”:
+                                                  (︁      )︁ (︁                  )︁
+1308                                           ⊢ ∀ 𝑘 > 𝑘 1 □𝑘 (𝜑 [𝑘]) → 𝜑 [𝑘] .
+1309
+       Then there is a threshold 𝑘 2 ∈ N such that ⊢𝑘 𝜑 [𝑘] for every 𝑘 > 𝑘 2 .
+1310
+1311      Critch (2019) derive this theorem from four efficiency assumptions on the proof system, recalled in Critch et al.
+1312   (2022, Appendix B). For 𝑆 none of them is assumed. Property (a), that 𝑆 can express every computable function,
+1313   holds because 𝑆 extends Peano Arithmetic. Property (b), that 𝑆 writes the number 𝑘 in O (lg 𝑘) symbols, holds by
+1314   the choice of binary numerals (appendix C). The abbreviation mechanism (c) is not used. The assumption (d) that
+1315   a proof of length ℓ can be checked inside the system by a proof of length linear in ℓ is replaced by a theorem
+1316
+                                                 Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+       6:30   •    Xu, Hutter, Hoo & Leyton-Brown
+
+
+1317   with a polynomial bound: if ⊢ℓ 𝜑, then 𝑆 proves □ℓ 𝜑 with a proof of length polynomial in ℓ 20 . This weaker form
+1318   suffices for Theorem B.7.
+1319
+1320
+          Theorem B.8 (Critch et al. (2022), Thm. 3.7). For all sufficiently large 𝑘
+1321                                             outcome(DupocBot(𝑘), DupocBot(𝑘)) = (𝐶, 𝐶)
+1322
+1323
+          Proof. Apply Theorem B.7 with 𝜑 [𝑘] = “DupocBot(k)(DupocBot(k)) == C” and 𝑘 1 = 0. If 𝜑 [𝑘] has a proof
+1324
+       of length at most 𝑘, then DupocBot(𝑘) finds it and plays 𝐶, so □𝑘 (𝜑 [𝑘]) → 𝜑 [𝑘] holds. This reasoning is valid in
+1325
+       every model of Peano Arithmetic and under both readings, so the implication is provable in 𝑆 by corollary B.5.
+1326
+       Theorem B.7 then gives ⊢𝑘 𝜑 [𝑘] for every 𝑘 > 𝑘 2 : the search of each copy of DupocBot(𝑘) succeeds, and both
+1327
+       play 𝐶.                                                                                                           □
+1328
+       B.2        Proofs of Section 3.3
+1329
+1330   This Appendix contains proofs and additional details on the material covered in Section 3.3 and the proof of
+1331   DupocBot vs. CupodBot.
+1332
+          Proof of Theorem 3.3. Let 𝑑 be a proof of 𝜑 of length at most 𝑘, and apply T to every formula of 𝑑. We check
+1333
+       that the result T𝑑 is a proof of T 𝜑. A logical step remains a logical step, because T commutes with the logical
+1334
+       symbols and logical rules do not depend on which constant occurs. An axiom of Peano Arithmetic does not
+1335
+       mention the two constants and is unchanged. The action axiom is sent to itself with its two disjuncts exchanged,
+1336
+       which is again an axiom by (S2). Hence T𝑑 is a proof of T 𝜑. It has the same length as 𝑑, since the length of a
+1337
+       proof counts its symbols without regard to which symbol they are. This gives ⊢𝑘 𝜑 ⇒⊢𝑘 T 𝜑, and the converse
+1338
+       follows by applying the same argument to T 𝜑, as T is an involution.                                          □
+1339
+1340     We move on to proving theorem 3.5, which demands careful attention as to how programs are written inside a
+1341   sentence. Consider the sentence of section 3.3
+1342
+                                                                   𝜑 = Plays(𝜋, 𝜌, 𝑎),
+1343
+1344   “𝜋 plays 𝑎 against 𝜌”. Programs are encoded by natural numbers by an injective coding, and we write code(𝜋) for
+1345   the code of 𝜋 (it’s value in N). Since the language of 𝑆 is {0, 1, +, ·, <, 𝑐𝐶 , 𝑐 𝐷 }, the sentence 𝜑 can mention 𝜋 only
+1346   through a closed term that evaluates to code(𝜋), which we call a name of 𝜋 and write 𝜋.
+1347      The question of which term to use for the name arises because of what T must do to 𝜑. Theorem 3.5 asks
+1348   that T 𝜑 be the sentence “T 𝜋 plays T 𝑎 against T 𝜋 ′ ”. Now suppose we take the obvious name, the numeral of
+1349   code(𝜋). It is a string of 0, 1 and +, which T leaves unchanged, so T 𝜑 flips only the constant 𝑐 𝑎 and reads “𝜋
+1350   plays T 𝑎 against 𝜋 ′ ”: the same two programs, the other action. For the theorem to hold, the names themselves
+1351   must contain the two constants, placed so that exchanging them turns the name of 𝜋 into the name of T 𝜋,
+1352
+                                                                      T (𝜋) = T 𝜋 .
+1353
+1354   We now construct names with this property.
+1355      First, define reval(𝑢, 𝑤, 𝑥), a function that, for a program code 𝑥 and 𝑢, 𝑤 ∈ {0, 1}, replaces every action value
+1356   0 of the program by 𝑢 and every action value 1 by 𝑤, including the action constants inside the hypotheses the
+1357   program stores, leaving the rest of its syntax unchanged, and returns a fixed default on other inputs. Thus, for
+1358   every program 𝜋,
+1359                                              reval(0, 1, code(𝜋)) = code(𝜋),
+1360                                                      reval(1, 0, code(𝜋)) = code(T 𝜋).
+1361
+1362   20 This is further explained in appendix C, boundedInnerNec_sixteen.
+
+1363
+       Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                              Satzilla   •   6:31
+
+
+1364     To construct the names, we choose a common representative code for each pair {𝜋, T 𝜋 },
+1365
+1366
+                                               rep(𝜋) := min{code(𝜋), code(T 𝜋)},
+1367   Since T is an involution, rep(T 𝜋) = rep(𝜋). We then choose the arguments that reconstruct 𝜋 from this
+1368   representative:
+1369                                               
+                                                   
+                                                    (0, 1),      if 𝜋 = T 𝜋,
+1370                                               
+                                                   
+                                     (𝑢𝜋 , 𝑤 𝜋 ) := (𝑐𝐶 , 𝑐 𝐷 ), if code(𝜋) < code(T 𝜋),
+1371                                               
+1372
+                                                    (𝑐 𝐷 , 𝑐𝐶 ), if code(T 𝜋) < code(𝜋).
+                                                   
+                                                   
+1373   Here 0 and 1 are numerals. Injectivity of the coding makes the three conditions exclusive and exhaustive.
+1374
+1375     Definition B.9 (Names of programs). The name of a program 𝜋 is the closed term
+1376
+                                                          (︁             ¤ )︁ .
+                                                𝜋 := reval 𝑢𝜋 , 𝑤 𝜋 , rep(𝜋)
+1377
+1378      Under the standard reading, 𝜋 evaluates to reval(0, 1, rep(𝜋)) or reval(1, 0, rep(𝜋)) according to the case, which
+1379   is code(𝜋) in each; under the swapped reading it evaluates to code(T 𝜋).
+1380      We use these names to express statements about program execution. Let Run(𝑥, 𝑦, 𝑧) be a fixed arithmetical
+1381   formula asserting that the program with code 𝑥, run on input 𝑦, halts with output 𝑧. For programs 𝜋, 𝜌 and an
+1382   action 𝑎, the sentence of section 3.3 is
+1383
+                                                   Plays(𝜋, 𝜌, 𝑎) := Run(𝜋, 𝜌, 𝑐 𝑎 ).
+1384
+1385   The formula Run contains no action constant; the constants enter the sentence only through the three substituted
+1386   terms.
+1387
+1388
+         Proof of theorem 3.5. We first show what was promised: T (𝜋) = T 𝜋. We have rep(T 𝜋) = rep(𝜋), and
+1389                                                 (T𝑢𝜋 , T𝑤 𝜋 ) = (𝑢 T𝜋 , 𝑤 T𝜋 ),
+1390
+1391
+       because T exchanges the two orientations when 𝜋 ≠ T 𝜋 and fixes the pair of numerals (0, 1) when 𝜋 = T 𝜋.
+1392
+       Since T also fixes the defining formula of reval and the term ¤
+                                                                    rep(𝜋), the identity follows, and likewise for 𝜌.
+1393
+       Since T fixes Run and T 𝑐 𝑎 = 𝑐 T𝑎 ,
+1394               T Plays(𝜋, 𝜌, 𝑎) = Run(T (𝜋), T (𝜌), T (𝑐 𝑎 )) = Run(T 𝜋, T 𝜌, 𝑐 T𝑎 ) = Plays(T 𝜋, T 𝜌, T 𝑎)
+1395
+1396
+       as an identity of syntactic expressions.                                                                                                □
+1397
+         Proof of theorem 3.6. Fix 𝑘, and write 𝜋 = DupocBot(𝑘) and 𝜌 = CupodBot(𝑘) = T 𝜋. Their searches have
+1398
+       the respective hypotheses
+1399
+                                      𝜑 := Plays(𝜌, 𝜋, 𝐶),  𝜓 := Plays(𝜋, 𝜌, 𝐷).
+1400
+1401   By theorem 3.5 and T 2 𝜋 = 𝜋, 𝜓 = T 𝜑, so theorem 3.3 gives ⊢𝑘 𝜑 ⇔⊢𝑘 𝜓 : the two searches either both succeed or
+1402   both fail. If both succeed, 𝜋 plays 𝐶 and 𝜌 plays 𝐷; but a found 𝜑 is true by soundness, so 𝜌 plays 𝐶, a contradiction.
+1403   Hence both fail, and each program plays its default: 𝜋 plays 𝐷 and 𝜌 plays 𝐶.                                        □
+1404
+1405   B.3   Corrections and Progress on Critch et al. (2022)
+1406   With a concrete formal system and the three tools above, we can revisit the open problems of Critch et al. (2022).
+1407   Löb’s theorem alone turns out to be enough to refute one of their stated examples, and the tools together resolve
+1408   or reduce several of their open problems. We begin with the refutation, then present the open problems and what
+1409   the library proves about each.
+1410
+                                                  Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+       6:32   •   Xu, Hutter, Hoo & Leyton-Brown
+
+
+1411   Table 4. PrudentBot(𝑘)’s row against every program of the paper in 𝑆 ′ , for all large 𝑘. ‡ is a floor dichotomy: the first row
+1412   gives the floor side (¬𝐻𝑘 , the one the matrices of ?? use), the second the hinge side (𝐻𝑘 ). Green: mutual cooperation; gray:
+1413
+       mutual defection.
+1414
+1415                                 Coop Cup DB Def Dup                EB    OB TFT CupT DupT CIM DID DIMCID Prud
+1416                   floor side DC        DC‡    DC DD       DD‡     DC‡    DD DD        DC      DC DD‡ DC‡   DD   DD‡
+1417                   hinge side            DD                 CC     CC                             CC DD          CC
+1418
+1419
+1420   B.3.1 DIMCID Always Defects: A Refutation of Example 5.3(a). Consider the bot DIMCID: “defect if my cooperation
+1421   implies your defection” (Critch et al. 2022, §5.2). Below, we prove, using Löb’s theorem, that DIMCID defects against
+1422   every closed program, so that it is behaviorally equivalent to DefectBot. This directly contradicts Example 5.3(a)
+1423   of Critch et al. (2022), where they stipulate that DIMCID cooperates with CooperateBot
+1424
+           Theorem B.10 (DIMCID always defects). For every program 𝜋 there is a 𝑘 0 such that for all 𝑘 > 𝑘 0 ,
+1425                                                (︁           )︁
+1426                                       outcome DIMCID(𝑘), 𝜋 = (𝐷, ·),
+1427   and the guard of DIMCID(𝑘) is provable in 𝑆 within length 𝑘.
+1428
+1429      Proof. Write 𝑝 for “DIMCID(𝑘) defects against 𝜋” and 𝑞 for “𝜋 defects against DIMCID(𝑘)”. The bot searches
+1430   for a proof of ¬𝑝 → 𝑞, which is 𝑝 ∨ 𝑞, and defects exactly when it finds one, so its action is the fixed point of
+1431                                                                 𝑝 ↔ □𝑘 (𝑝 ∨ 𝑞).
+1432
+1433
+       Since 𝑝 → 𝑝 ∨ 𝑞, we have □𝑘 𝑝 → □𝑘 (𝑝 ∨ 𝑞), and the fixed point turns the right-hand side into 𝑝; hence □𝑘 𝑝 → 𝑝.
+1434
+       Löb’s Theorem B.7 then gives 𝑝, for large 𝑘, whatever 𝑞 is. In words, a proof of the guard makes the bot defect,
+1435
+       which falsifies the antecedent ¬𝑝, which makes the guard true, and the opponent never enters.                  □
+1436
+       B.3.2 Progress on Some Open Problems. Apart from our novel proof on DupocBot vs. CupodBot (cref), we present
+1437
+       three other open problems of Critch et al. (2022) are addressed by the library. One is settled, one reduced to
+1438
+       bounded-consistency questions, and one answered by construction
+1439
+1440     Open Problem 5: outcome(CUPOD(𝑘), CIMCIC(𝑘)). Critch et al. (2022) rules out (𝐷, 𝐶), since CupodBot never
+1441   exploits, and leaves (𝐶, 𝐶), (𝐶, 𝐷) and (𝐷, 𝐷) open. In 𝑆 the cell is a genuine floor with two nested hinges (cref):
+1442   𝐺𝑘 , “CIMCIC(𝑘) proves within length 𝑘 that its cooperating implies CupodBot(𝑘)’s”, and 𝑈𝑘 , “CupodBot(𝑘) proves
+1443   within length 𝑘 that CIMCIC(𝑘) defects”. We prove, for all large 𝑘, that 𝐺𝑘 gives (𝐶, 𝐶), that ¬𝐺𝑘 ∧𝑈𝑘 gives (𝐷, 𝐷),
+1444   and that ¬𝐺𝑘 ∧ ¬𝑈𝑘 gives (𝐶, 𝐷). These are exactly Critch’s three cases, so the open problem is not closed but
+1445   reduced: each hinge is a bounded-consistency question, and the floor side of our matrix, which takes both hinges
+1446   negative, reports (𝐶, 𝐷), both searches failing.
+1447
+         Open Problem 6: outcome(DUPOC(𝑘), DIMCID(𝑘)). Settled, with no hinge: (𝐷, 𝐷) for all large 𝑘. By theorem B.10,
+1448
+       DIMCID(𝑘) always defects; DupocBot(𝑘)’s guard, “DIMCID(𝑘) cooperates with me”, is then false in N, so by
+1449
+       soundness no proof of it exists at any length and DupocBot(𝑘) defects.
+1450
+1451     Open Problem 9. A computationally bounded PrudentBot: “Cooperates iff I prove within length 𝑘 both that
+1452   my opponent cooperates with me and that my opponent defects against DefectBot.” It exists, and its row is in
+1453   the library (table 4).
+1454
+1455   C      Lean: Formal System S
+1456   In this appendix, we detail some of the lean formalization summarized in section 4.1.3.
+1457
+       Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                              Satzilla   •   6:33
+
+
+1458   Table 5. The trusted base: the nine definitions on which every result rests. The file Tour.lean of the repository restates
+1459   all nine at N, each kept in sync with its definition by the compiler, and walks through the headline theorems; it is the
+1460   recommended entry point into the code.
+1461
+1462             Definition              What it fixes                                              Lean
+1463
+                 Language and theory     arithmetic with 𝑐𝐶 , 𝑐 𝐷 and the action axiom              LAct, TAct
+1464             Proof length            the symbol count of a derivation                           proofLen
+1465             The box                 □𝑘 , bounded provability as a formula                      LenBox
+1466             Program codes           programs as numbers, by a polynomial pairing               progCode
+1467             Names                   a program named by a short term                            codeTerm, descriptions
+1468             Templates               a hypothesis as a formula with open slots                  template
+1469             The guard               the sentence a search consults                             guardCode
+1470             Substitution            simulated programs read the outer players                  substCode
+1471
+                 The evaluator           what a program plays, as a relation in arithmetic          EvalGraph
+1472
+1473
+         Proof length. A proof of 𝑆 is a derivation in the sequent calculus of the Foundation library (Saito and Noguchi
+1474
+       2026), a one-sided calculus with cut: a tree in which every node carries a sequent, that is, a finite set of formulas.
+1475
+       For a derivation 𝑑, we define its length |𝑑 | as
+1476                                                  ∑︁ (︁          )︁     ∑︁
+1477                                       |𝑑 | =           1 + |Γ𝑛 | +              |𝑡 |,
+1478                                               nodes 𝑛 of 𝑑                 ∃-introductions
+1479   where |Γ𝑛 | is the number of symbols in the sequent at node 𝑛 and |𝑡 | the number of symbols in the witness term
+1480   of an ∃-introduction. Two properties are at the core of this design. First, it is symbol-blind: every symbol counts
+1481   for one, whichever symbol it is. The length of a proof is therefore unchanged by any renaming of symbols, in
+1482   particular by 𝜏; together with the action axiom being stated in both orders, this is what makes theorem 3.3 exact,
+1483   with no overhead in the budget. Second, it is proper: every node pays for its whole sequent and every witness is
+1484   paid for, so only finitely many proofs have length at most 𝑘, with an explicit bound on their codes. Since a node
+1485   pays for its sequent, a proof is at least as long as the sentence it proves:
+1486
+                                                         ⊢𝑘 𝜑     =⇒       |𝜑 | ≤ 𝑘.
+1487
+1488      Encodings. 𝑆 is a theory of arithmetic: its sentences speak about natural numbers and nothing else, since its
+1489   signature contains only 0, 1, +, ·, < and the two action constants. For 𝑆 to reason about sentences, proofs and
+1490   programs, each of these objects is assigned a natural number, its Gödel code, written ⌜·⌝. For example, programs
+1491   are encoded using the following pairing:
+1492
+                   ⌜.search 𝑘 𝜑 𝑝 𝑞⌝ = ⟨6, ⟨𝑘, ⟨⌜𝜑⌝, ⟨⌜𝑝⌝, ⌜𝑞⌝⟩⟩⟩⟩ + 1,                  where       ⟨𝑥, 𝑦⟩ := (𝑥 + 𝑦) 2 + 𝑦.
+1493
+1494   which is injective. The code of a program is then the value of a term built from the numerals of its leaves, and
+1495   a program of budget 𝑘 can be named inside a sentence by a short expression in which 𝑘 appears as a binary
+1496   numeral, of length 𝑂 (log 𝑘). This is assumption (b) of Critch et al. (2022).
+1497      Bounded Provability. With proofs coded as numbers, “𝑑 is a proof of the sentence coded by 𝑥” is an arithmetical
+1498   relation Proof𝑇Act (𝑑, 𝑥), provided by the Foundation library, and bounded provability is the formula
+1499
+1500
+                                         □𝑘 (𝑥) := ∃ 𝑑 < 𝐵(𝑘). Proof𝑇Act (𝑑, 𝑥) ∧ |𝑑 | ≤ 𝑘,
+1501   read “some proof of the sentence coded by 𝑥 has length at most 𝑘”; we write □𝑘 𝜑 for □𝑘 (⌜𝜑⌝). The bound 𝐵(𝑘)
+1502   is the bound on the codes of proofs of length at most 𝑘 that properness provides, so that the quantifier ranges
+1503   over a finite set and □𝑘 is a bounded search. In Lean:
+1504
+                                                  Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+       6:34   •   Xu, Hutter, Hoo & Leyton-Brown
+
+
+1505
+        def LenBox (k 𝜑 : V) : Prop := ∃ d < codeBound k, Proof T d 𝜑 ∧ proofLen T d ≤ k
+1506
+1507
+1508     From the proofs to Lean. Every result of section 3 is mechanized; table 6 gives the name of the most impactful
+1509   ones.
+1510
+1511
+1512                                           Table 6. The results of ?? and their Lean counterparts.
+1513
+1514                    Result                                                                  Lean
+1515                    Soundness (proposition B.1)                                             TAct_sound_nat
+1516                    Completeness over the two readings (corollary B.5)                      TAct_complete_of_readings
+1517                    Bounded Löb (theorem B.7)                                               family_found
+1518                    Transposition of provability (theorem 3.3)                              lenBoxNat_swap_iff
+1519                    Transposition of statements about programs (theorem 3.5)                lMap_swap_sentenceAt_plays
+1520                    Transposition of outcomes (theorem 3.5)                                 outcomeSpecA_transpose
+1521
+1522
+1523      One important fact about Theorem B.7 is that it rests on 𝑆 being able to verify its own proofs at bounded cost,
+1524   and to know that it can: if 𝜑 [𝑘] has a proof of length at most ℓ, then □ℓ 𝜑 [𝑘] has a proof of length at most 𝑃 (ℓ),
+1525   and this implication holds in every model of 𝑆, uniformly in 𝑘, so that 𝑆 proves it. This is the inner necessitation
+1526   of provability logic, with lengths attached. Critch et al. (2022) assumes 𝑃 to be linear (Appendix B, assumption
+1527   (d)); we prove it for 𝑃 polynomial, of degree 16. The weaker bound suffices because the Löb argument applies it
+1528   only to proofs of length polylogarithmic in the budget 𝑘, which a polynomial keeps far below 𝑘. The proof is by
+1529   far the largest part of the development (boundedInnerNec_sixteen).
+1530
+1531
+       D      Experiments Appendix
+1532
+       BETTER TITLE
+1533
+          SEE TABLE FULL; COMMENT ON IT
+1534
+          In this Appendix, we describe our procedures for enumerating and classifying mixed program equilibria and
+1535
+       for analyzing the long run dynamics of the program meta-game. The same methods apply to the full-transparency
+1536
+       program meta-game 𝐺 prog of Section cite and the partial-transparency meta-game 𝐺 𝜏 of Section cite, with the
+1537
+       program library and transparency maps fixed before each computation. All equilibrium claims are relative to the
+1538
+       chosen program library.
+1539
+1540
+1541
+       D.1        Enumerating Program Equilibria
+1542   Let 𝐺 = (𝑈 , 𝑈 ⊤ ) be a finite symmetric two players game, where 𝑈 denotes the payoff matrix of the row player
+1543   against the column player; as usual, denote by 𝐴 the (common) action set. We enumerate its extreme Nash
+1544   equilibria using lrsNash in exact rational arithmetic (Avis et al. 2010). If the payoff matrix 𝑈 had negative entries,
+1545   a common additive shift (the minimum value) makes all payoffs positive without changing best responses. The
+1546   algorithm enumerates completely labeled vertex pairs of the associated best-response polytopes and normalizes
+1547   them to mixed-strategy profiles. Complete labeling expresses the equilibrium condition that each pure strategy is
+1548   either assigned zero probability or is a best response to the opponent’s mixture.
+1549      The finite list of extreme equilibria describes the entire equilibrium set, including any continua. Specifically,
+1550   the Nash equilibrium set of a finite two-players game is a finite union of maximal Nash subsets of product form
+1551
+       Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                                                                                                      Satzilla   •   6:35
+
+
+1552   Table 7. Outcome matrix of the twelve bots of the ladder zoos of ?? in 𝑆 ′ at a shared proof budget 𝑘; a cell gives the row
+1553   bot’s action first. Cells hold for every sufficiently large 𝑘 and every sufficient fuel. Shaded cells: mutual cooperation (green)
+1554   and mutual defection (grey). Orange cells‡ rest on the hinge of ??: here the value shown is the floor side (the floor guard not
+1555
+       provable within budget). Highlighted names (yellow) are empirically unexploitable bots (??)
+1556
+
+
+
+
+                                                    CooperateBot                 TitForTatBot                                                   CupodTrollBot   DupocTrollBot
+1557
+
+
+                                                                    DefectBot                                         DupocBot
+1558
+
+                                                                                                                                 CupodBot                                           CIMCIC   DIMDID
+1559
+                                                                                                DBot    OBot   EBot
+1560
+1561                             CooperateBot      CC              CD           CC CD                  CC      CD CC CC CC                                      CC                  CC CC
+1562                              DefectBot        DC              DD           DD DC                  DD      DD DD DD DC                                      DC                  DD DD
+                                 TitForTatBot      CC              DD           CC DC                  CD      DC CC CC CC                                      CC                  CC CC
+1563
+                                 DBot              DC              CD           CD DD                  CD      CD CD‡ CC DC                                     DC                  CD‡ CC
+1564                              OBot             CC              DD           DC DC                  DD      DC DD DC‡ CC                                     CC                  DD DD
+1565                             EBot              DC              DD           CD DC                  CD      CC CD‡ CC DC                                     DC                  CD‡ CC
+1566                              DupocBot         CC              DD           CC DC‡                 DD      DC‡ CC DC DC‡                                    DD                  CC DC‡
+1567                             CupodBot          CC              DD            CC CC CD‡ CC CD DD DD CC                                                                           CD‡ DD
+                                 CupodTrollBot     CC              CD            CC CD CC CD CD‡ DD CC CC                                                                           CD‡ CC
+1568                             DupocTrollBot     CC              CD            CC CD CC CD DD CC CC CC                                                                            CD‡ CC
+1569                              CIMCIC           CC              DD            CC DC‡ DD DC‡ CC DC‡ DC‡ DC‡                                                                       CC DC‡
+1570                             DIMDID            CC              DD            CC CC DD CC CD‡ DD CC CC                                                                           CD‡ DD
+
+1571
+1572
+1573   (Jansen 1981):
+1574                                                                𝐾
+                                                                   ⋃︂
+1575                                        NE(𝐺) =                             C𝑘 ,                   C𝑘 = 𝑋𝑘 × 𝑌𝑘 ⊆ Δ(𝐴) × Δ(𝐴),
+1576                                                               𝑘=1
+
+1577   where 𝑋𝑘 and 𝑌𝑘 are convex polytopes. Writing
+1578
+                                         𝑋𝑘 = conv{𝜉𝑘,1, . . . , 𝜉𝑘,𝑟𝑘 },                                       𝑌𝑘 = conv{𝜂𝑘,1, . . . , 𝜂𝑘,𝑠𝑘 },
+1579
+1580   the vertices of C𝑘 are precisely the extreme equilibrium profiles (𝜉𝑘,𝑖 , 𝜂𝑘,𝑗 ). Consequently, every profile
+1581                           (︄ 𝑟                         )︄
+                                 ∑︁ 𝑘           𝑠
+                                                ∑︁𝑘                                  ∑︁      ∑︁
+1582
+                                      𝜆𝑖 𝜉𝑘,𝑖 ,     𝜇 𝑗 𝜂𝑘,𝑗 , for 𝜆𝑖 , 𝜇 𝑗 ≥ 0, and    𝜆𝑖 =    𝜇 𝑗 = 1,
+1583
+                                   𝑖=1           𝑗=1                                                                                        𝑖                                   𝑗
+1584
+1585   is a Nash equilibrium. The convex weights for the two players may be chosen independently.
+1586      To assign connected-component labels, we construct a bipartite graph whose two vertex classes are the distinct
+1587   row and column strategies appearing in the enumeration, with an edge for each extreme equilibrium. Its maximal
+1588   complete bipartite subgraphs determine the maximal Nash subsets, and its connected components determine the
+1589   connected components of NE(𝐺).
+1590      We apply this procedure in turn to the full transparency special case see section cite, corresponding to 𝐺 prog ,
+1591   and the partial transparency meta-game see section cite, corresponding to 𝐺 𝜏 . The action sets correspond to the
+1592   program libraries Σ.
+1593
+1594   D.2    Replicator Dynamics
+1595   For each connected component of NE(𝐺) identified in Appendix D.1, we estimate the probability that a population
+1596   with uniformly drawn initial composition converges to that component. Let 𝜶 ∈ Δ(𝐴) be a mixed action, under
+1597   the mass action interpretation, and let 𝛼𝑖 denote the share of the population playing action 𝑖 ∈ 𝐴. Under random
+1598
+                                                                   Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+       6:36     •   Xu, Hutter, Hoo & Leyton-Brown
+
+
+1599          Table 8. All 21 extreme Nash equilibria of the restricted 8-bot program meta-game at full transparency (floor case).
+1600
+1601                                Strategy support (either player)                    Probabilities in support order
+1602
+                                    Full cooperation (16 extreme equilibria)            Pr[(C, C)] = 1
+1603
+                                    DupocBot                                            1
+1604
+                                    CooperateBot, DupocBot                              2/3, 1/3
+1605
+                                    DupocBot, TitForTatBot                              1/3, 2/3
+1606                                CooperateBot, DupocBot, TitForTatBot                2/3, 1/9, 2/9
+1607
+                                    Partial cooperation (1 equilibrium)                 Pr[(C, C)] = 11/18
+1608
+1609
+                                    CooperateBot, OBot, EBot                            1/2, 1/3, 1/6
+1610                                Full defection (4 extreme equilibria)               Pr[(C, C)] = 0
+1611                                DefectBot                                           1
+1612                                DefectBot, OBot                                     2/3, 1/3
+1613
+1614
+1615
+       matching, (𝑈 𝜶 )𝑖 is the expected payoff to 𝑖 and 𝜶 ⊤𝑈 𝜶 is the population mean. The replicator dynamics are
+1616
+1617
+                                                 𝛼¤𝑖 = 𝛼𝑖 · 𝑔𝑖 (𝜶 ),        𝑔𝑖 (𝜶 ) = (𝑈 𝜶 )𝑖 − 𝜶 ⊤𝑈 𝜶 .
+1618
+1619   Thus a program present in the population gains share whenever its payoff exceeds the mean. If an interior
+1620   trajectory converges to 𝜶 ∗ , then (𝜶 ∗, 𝜶 ∗ ) is a program equilibrium, see Hofbauer and Sigmund (2003).
+1621      We draw 1, 000 initial states independently and uniformly from Δ(𝐴) using a Dirichlet(1, . . . , 1) distribution.
+1622   At and 𝑇 = 105 and 𝑇 /2, we label action 𝑖 as absent if 𝛼𝑖 < 𝜀 and tied with the mean if |𝑔𝑖 (𝜶 )| ≤ 𝜀, where 𝜀 = 10−6 .
+1623   We classify a trajectory as converged if, at both times, no action exceeds the mean by more than 𝜀, every action is
+1624   absent or tied, both label sets agree across times, and ∥𝜶 (𝑇 ) − 𝜶 (𝑇 /2) ∥ ∞ < 𝜀. Using the exact enumeration from
+1625   Appendix D.1, we retain the extreme strategies that assign zero share to every action labeled absent and against
+1626   which every action labeled tied is a best response. Their convex hull consists of mixtures inducing symmetric
+1627   equilibria in a single component. We assign the trajectory to that component after verifying that 𝜶 (𝑇 ) is within
+1628   10−4 in supremum norm of a point in the hull.
+1629
+1630
+       E Results on Full Transparency
+1631
+1632
+       E.1 An Enumeration of Program Equilibria
+1633   Each row of Table 8 gives a strategy for either player, with probabilities listed in the same order as the bots. Any
+1634   two rows in the same group, one for each player, give an extreme equilibrium with the probability of mutual
+1635   cooperation shown in the group heading. For example, the four rows in the full-cooperation group give 4 × 4 = 16
+1636   extreme equilibria, including the four in which both players choose the same row.
+1637      In the underlying Prisoner’s Dilemma, the unique Nash equilibrium is (𝐷, 𝐷). In 𝐺 prog , the three components of
+1638   NE(𝐺 prog ) (the set of program equilibria) yield mutual cooperation with probabilities 1, 11/18, and 0, respectively,
+1639   in the order shown in Table 8. Thus full cooperation, with payoff 𝑅 = 2 for each player, holds throughout an
+1640   entire component, while the intermediate rate occurs at a single symmetric equilibrium.
+1641      For the chosen library Σ, DupocBot is the only program that both players use in every fully cooperative
+1642   equilibrium. To see this, write the fully cooperative component as C1 = 𝑋 1 × 𝑌1 . Each vertex of 𝑋 1 or 𝑌1 assigns
+1643   probability at least 1/9 to DupocBot, so the same bound holds for both players at every (𝜉, 𝜂) ∈ C1 by convexity.
+1644   No other program is required, since both players may use DupocBot alone.
+1645
+       Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                               Satzilla   •   6:37
+
+
+1646   Table 9. Final population composition in the eight-program full-transparency game (floor case). A program is counted as
+1647   present if its share at time 𝑇 is at least 𝜀 = 10−6 .
+1648
+1649                                    Programs present at time 𝑇                       Number of runs
+1650                                    CooperateBot, DupocBot, TitForTatBot                        904
+1651                                    DupocBot, TitForTatBot                                       46
+1652                                    DupocBot                                                     40
+1653                                    CooperateBot, DupocBot                                       10
+1654
+1655   Table 10. Equilibrium outcomes across program libraries at full transparency. The cooperative support lists the programs
+1656   used in at least one fully cooperative equilibrium, with 𝑆 = {CooperateBot, DupocBot, TitForTatBot}. The last column
+1657   gives the fraction of 1, 000 uniformly drawn initial populations assigned to the fully cooperative component.
+1658
+1659                                                         Nash equilibria                                Replicator dynamics
+1660             Library                  Components    Extreme equilibria Cooperative support               Cooperative share
+1661             Σ \ {CupodBot}               3                21                   𝑆                               100%
+1662             Σ                            3                21                   𝑆                               100%
+1663             Σ + trolls                   3                35                   𝑆                              94.8%
+1664
+                 Σ + trolls + provers         3                69            𝑆 ∪ {CIMCIC}                           100%
+1665
+1666
+1667
+       E.2   Replicator Dynamics at Full Transparency
+1668   For the eight-program library Σ at full transparency (floor case), we drew 1, 000 initial population states uniformly
+1669   from Δ(Σ). All 1,000 trajectories met the convergence criterion of Appendix D.2, and all were assigned to the
+1670   fully cooperative component C1 of Table 8. Its estimated basin share is therefore 1, with a 95% Wilson interval of
+1671   [0.9962, 1]. No trajectory was assigned to either the isolated equilibrium or the full-defection component. For
+1672   each of these components, the estimated basin share is 0, with a 95% Wilson interval of [0, 0.0038]. Table 9 shows
+1673   how the final population composition varied within C1 . DupocBot was present in every run. Its final share ranged
+1674   from 0.1697 to 1, compared with the lower bound of 1/9 over the entire component derived in Appendix E.1. In
+1675   904 runs, both CooperateBot and TitForTatBot were also present. Despite this variation, every final population
+1676   yielded mutual cooperation with probability 1 and mean payoff 𝑅 = 2. Thus, for this library at full transparency,
+1677   mutual cooperation is the predominant outcome of rational play when equilibrium selection follows the replicator
+1678   dynamics from a uniformly drawn initial population.
+1679
+1680   E.3   Sensitivity to the Program Library
+1681   We repeat the full-transparency analysis of Appendix D for four nested program libraries (see Figure 2), using
+1682   the floor case throughout. Starting from the base library Σ, we remove CupodBot to obtain the seven-program
+1683   library, or add CupodTrollBot and DupocTrollBot to obtain the ten-program library. Adding the implication
+1684   provers CIMCIC and DIMDID gives the twelve-program library.
+1685      In all four libraries, the three equilibrium components yield mutual cooperation with probabilities 1, 11/18, and
+1686   0. The choice of library matters more for equilibrium selection. Every sampled population reached full cooperation
+1687   in the seven-, eight-, and twelve-program libraries. Adding only the trolls left the support of the fully cooperative
+1688   component unchanged, yet a small number of populations spent long periods near full defection. DupocTrollBot
+1689   gives DefectBot a payoff advantage over DupocBot. It cooperates even against the unconditional defection of
+1690   DefectBot, which earns 2 in that encounter, but defects against DupocBot, which earns −1. Once DupocBot is
+1691   rare in a population otherwise composed of DefectBot and OBot, it earns a positive payoff only when it meets
+1692
+                                                   Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+       6:38   •    Xu, Hutter, Hoo & Leyton-Brown
+
+
+1693   another copy of itself. Such encounters are rare, so its share recovers slowly. Even under adversarial pressure
+1694   from DupocTrollBot, the DupocBot equilibrium is reached a super-majority of times.
+1695
+1696   F      Experiments and Results on Partial Transparency
+1697                                                                                                                       prog
+       Throughout this Appendix we consider the setup given in Section 2.3, where a base program Bot in 𝐺 PD
+1698                                             𝜏 , where 𝛼 ∈ [0, 1] is the linear threshold parameter and 𝜏 is a
+       is extended to a family of TauBot(𝛼) in 𝐺 PD
+1699   transparency map, common among the two players. ADD EXPL OF WHAT WE DO BELOW
+1700
+1701   F.1        Experimental Setup
+1702
+       Following Definition 2.10, we consider transparency maps induced by a pseudo-metric through a softmax with
+1703
+       a temperature parameter. As shown in Section 2.4, the setup is flexible enough to cover the full spectrum of
+1704
+       transparency, from fully transparent OSGT to the base game. In particular, the behavioral family compares the
+1705
+       actions that programs take against each opponent in the library, whereas the syntactic family compares the
+1706
+       abstract syntax trees of their Lean source code.
+1707
+1708       Behavioral Family. For each program 𝜋 ∈ Σ = {𝜋1, . . . , 𝜋 𝑁 }, define its outcome row as
+1709                                               (︁                      )︁ 𝑁
+1710                                     row(𝜋) := outcome(𝜋, 𝜋𝑚 )1 𝑚=1 ∈ {𝐶, 𝐷 }𝑁 ,
+1711
+       so that the 𝑚th entry records the action that 𝜋 takes against 𝜋𝑚 . We define the behavioral pseudo-distance as
+1712
+       the Hamming distance between two outcome rows, that is, the number of opponents against which the two
+1713
+       programs take different actions:
+1714
+1715                             𝑑 bvr (𝜋 𝑗 , 𝜋ℓ ) := {𝑚 ∈ {1, . . . , 𝑁 } : row(𝜋 𝑗 )𝑚 ≠ row(𝜋ℓ )𝑚 } ∈ {0, . . . , 𝑁 }.
+1716
+1717   Distinct programs can have identical outcome rows and hence have distance zero. For each 𝑇 ∈ [0, +∞], we write
+        𝑇 for the transparency map induced by 𝑑
+1718   𝜏bvr                                       bvr according to Definition 2.10.
+1719
+          Syntactic Family. For each program 𝜋 ∈ Σ, let ast(𝜋) denote the abstract syntax tree of its Lean source code,
+1720
+       with nodes labeled by the corresponding Prog or Formula constructors and with budget arguments omitted. For
+1721
+       a tree 𝑡, let |𝑡 | denote its number of nodes. We define the syntactic pseudo-distance as the Zhang-Shasha tree edit
+1722
+       distance (Zhang and Shasha 1989) between two such trees, normalized by the number of nodes in the larger tree:
+1723
+                                                                          (︁                 )︁
+1724                                                                 ted ast(𝜋 𝑗 ), ast(𝜋ℓ )
+                                               𝑑 syn (𝜋 𝑗 , 𝜋ℓ ) :=    {︁                       }︁ ,
+1725                                                                max |ast(𝜋 𝑗 )|, |ast(𝜋ℓ )|
+1726
+1727   where ted is the minimum number of node insertions, deletions, and relabelings needed to transform one tree
+1728   into the other, with each operation assigned unit cost. Programs that differ only in their budget arguments have
+1729   identical trees and hence have distance zero. For each 𝑇 ∈ [0, +∞], we write 𝜏syn   𝑇 for the transparency map
+
+1730   induced by 𝑑 syn according to Definition 2.10.
+1731
+         Transparency Levels. The same temperature 𝑇 can yield different degrees of transparency in the behavioral and
+1732
+       syntactic families because the two pseudo-distances measure different features of a program. To compare the
+1733
+       families on a common scale, we measure the fraction of uncertainty about the opponent’s identity that a signal
+1734
+       drawn from the transparency map removes on average. Formally, let 𝑁 = |Σ| ≥ 2, draw the opponent’s program
+1735
+       𝐵 uniformly from Σ, and, conditional on 𝐵 = 𝜋, draw a signal 𝑆 from 𝜏 (𝜋). We define the transparency level of 𝜏 as
+1736
+1737                                                𝐼 (𝐵; 𝑆) 𝐻 (𝐵) − 𝐻 (𝐵 | 𝑆)     𝐻 (𝐵 | 𝑆)
+                                         𝑡 (𝜏) :=           =                  =1−           ∈ [0, 1],
+1738                                                 𝐻 (𝐵)         𝐻 (𝐵)            log2 𝑁
+1739
+       Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                                    Satzilla   •   6:39
+
+
+1740   where 𝐻 (𝐵) = log2 𝑁 is the initial uncertainty about the opponent’s identity21 , measured in bits, and 𝐻 (𝐵 | 𝑆)
+1741   is the uncertainty that remains after observing the signal, averaged over possible signals. Thus, 𝑡 (𝜏) = 0 when
+1742   the signal is independent of the opponent’s identity, and 𝑡 (𝜏) = 1 when the signal determines that identity.
+1743   We compare the two families by choosing a temperature for each that yields the same transparency level. At a
+1744   matched level, the signals remove the same fraction of uncertainty on average, although they may distinguish
+1745   different pairs of programs.
+1746
+1747
+1748
+1749
+1750
+1751
+1752
+1753
+1754
+1755
+1756
+1757
+1758
+1759
+1760
+1761
+1762
+1763
+1764
+1765
+1766
+1767
+1768
+1769
+1770
+1771
+1772
+1773
+1774
+1775
+1776
+1777
+1778
+1779
+1780
+1781
+1782
+1783   21 The uniform prior reflects a principle of indifference: in the absence of information favoring one program over another, we assign equal
+1784   probability to every program in Σ. This assumption may be inappropriate when some programs are known to occur more frequently than
+1785   others. In that case, the same ratio 𝐼 (𝐵; 𝑆 )/𝐻 (𝐵) can be evaluated under a prior that reflects those frequencies.
+1786
+                                                        Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+       6:40    •   Xu, Hutter, Hoo & Leyton-Brown
+
+
+1787   G       Reproducibility Checklist for JAIR
+1788
+       TO BE COMPLETED
+1789
+         Select the answers that apply to your research – one per item.
+1790
+1791   All articles:
+1792
+              (1) All claims investigated in this work are clearly stated. [yes/partially/no]
+1793
+              (2) Clear explanations are given how the work reported substantiates the claims. [yes/partially/no]
+1794
+              (3) Limitations or technical assumptions are stated clearly and explicitly. [yes/partially/no]
+1795
+              (4) Conceptual outlines and/or pseudo-code descriptions of the AI methods introduced in this work are
+1796
+                  provided, and important implementation details are discussed. [yes/partially/no/NA]
+1797
+              (5) Motivation is provided for all design choices, including algorithms, implementation choices, parameters,
+1798
+                  data sets and experimental protocols beyond metrics. [yes/partially/no]
+1799
+1800   Articles containing theoretical contributions:
+1801
+       Does this paper make theoretical contributions? [yes/no]
+1802
+         If yes, please complete the list below.
+1803
+1804       (1) All assumptions and restrictions are stated clearly and formally. [yes/partially/no]
+1805       (2) All novel claims are stated formally (e.g., in theorem statements). [yes/partially/no]
+1806       (3) Proofs of all non-trivial claims are provided in sufficient detail to permit verification by readers with
+1807           a reasonable degree of expertise (e.g., that expected from a PhD candidate in the same area of AI).
+1808           [yes/partially/no]
+1809       (4) Complex formalism, such as definitions or proofs, is motivated and explained clearly. [yes/partially/no]
+1810       (5) The use of mathematical notation and formalism serves the purpose of enhancing clarity and precision;
+1811           gratuitous use of mathematical formalism (i.e., use that does not enhance clarity or precision) is avoided.
+1812           [yes/partially/no]
+1813       (6) Appropriate citations are given for all non-trivial theoretical tools and techniques. [yes/partially/no]
+1814
+1815
+       Articles reporting on computational experiments:
+1816   Does this paper include computational experiments? [yes/no]
+1817     If yes, please complete the list below.
+1818       (1) All source code required for conducting experiments is included in an online appendix or will be made
+1819           publicly available upon publication of the paper. The online appendix follows best practices for source
+1820           code readability and documentation as well as for long-term accessibility. [yes/partially/no]
+1821       (2) The source code comes with a license that allows free usage for reproducibility purposes. [yes/partially/no]
+1822       (3) The source code comes with a license that allows free usage for research purposes in general. [yes/partially/no]
+1823       (4) Raw, unaggregated data from all experiments is included in an online appendix or will be made pub-
+1824           licly available upon publication of the paper. The online appendix follows best practices for long-term
+1825           accessibility. [yes/partially/no]
+1826       (5) The unaggregated data comes with a license that allows free usage for reproducibility purposes. [yes/partially/no]
+1827       (6) The unaggregated data comes with a license that allows free usage for research purposes in general.
+1828           [yes/partially/no]
+1829       (7) If an algorithm depends on randomness, then the method used for generating random numbers and for
+1830           setting seeds is described in a way sufficient to allow replication of results. [yes/partially/no/NA]
+1831       (8) The execution environment for experiments, the computing infrastructure (hardware and software) used
+1832           for running them, is described, including GPU/CPU makes and models; amount of memory (cache and
+1833
+       Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+                                                                                                                             Satzilla   •   6:41
+
+
+1834          RAM); make and version of operating system; names and versions of relevant software libraries and
+1835          frameworks. [yes/partially/no]
+1836      (9) The evaluation metrics used in experiments are clearly explained and their choice is explicitly motivated.
+1837          [yes/partially/no]
+1838     (10) The number of algorithm runs used to compute each result is reported. [yes/no]
+1839     (11) Reported results have not been “cherry-picked” by silently ignoring unsuccessful or unsatisfactory
+1840          experiments. [yes/partially/no]
+1841     (12) Analysis of results goes beyond single-dimensional summaries of performance (e.g., average, median) to
+1842          include measures of variation, confidence, or other distributional information. [yes/no]
+1843     (13) All (hyper-) parameter settings for the algorithms/methods used in experiments have been reported, along
+1844          with the rationale or method for determining them. [yes/partially/no/NA]
+1845     (14) The number and range of (hyper-) parameter settings explored prior to conducting final experiments have
+1846          been indicated, along with the effort spent on (hyper-) parameter optimisation. [yes/partially/no/NA]
+1847     (15) Appropriately chosen statistical hypothesis tests are used to establish statistical significance in the presence
+1848          of noise effects. [yes/partially/no/NA]
+1849
+1850   Articles using data sets:
+1851   Does this work rely on one or more data sets (possibly obtained from a benchmark generator or similar software
+1852   artifact)? [yes/no]
+1853      If yes, please complete the list below.
+1854
+            (1) All newly introduced data sets are included in an online appendix or will be made publicly available upon
+1855
+                publication of the paper. The online appendix follows best practices for long-term accessibility with a
+1856
+                license that allows free usage for research purposes. [yes/partially/no/NA]
+1857
+            (2) The newly introduced data set comes with a license that allows free usage for reproducibility purposes.
+1858
+                [yes/partially/no]
+1859
+            (3) The newly introduced data set comes with a license that allows free usage for research purposes in general.
+1860
+                [yes/partially/no]
+1861
+            (4) All data sets drawn from the literature or other public sources (potentially including authors’ own
+1862
+                previously published work) are accompanied by appropriate citations. [yes/no/NA]
+1863
+            (5) All data sets drawn from the existing literature (potentially including authors’ own previously published
+1864
+                work) are publicly available. [yes/partially/no/NA]
+1865
+            (6) All new data sets and data sets that are not publicly available are described in detail, including relevant
+1866
+                statistics, the data collection process and annotation process if relevant. [yes/partially/no/NA]
+1867
+            (7) All methods used for preprocessing, augmenting, batching or splitting data sets (e.g., in the context of
+1868
+                hold-out or cross-validation) are described in detail. [yes/partially/no/NA]
+1869
+1870   Explanations on any of the answers above (optional):
+1871
+       [Text here; please keep this brief.]
+1872
+1873   Received 20 February 2007; accepted 5 June 2009
+1874
+1875
+1876
+1877
+1878
+1879
+1880
+                                                 Journal of Artificial Intelligence Research, Vol. 4, Article 6. Publication date: August 2026.
+

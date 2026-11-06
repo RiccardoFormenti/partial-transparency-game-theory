@@ -1,0 +1,101 @@
+% Draft Section 5.2 prose and figure captions. Copy/adapt into the paper.
+% Requires graphicx. Set the graphics path to this directory's figures/,
+% or copy the four PDFs into the paper's figure directory.
+% All empirical claims below refer to body8, floor, behavioral signals.
+
+\paragraph{Transparency and cooperation under behavioral signals.}
+We evaluate the eight-program library on the floor side at
+$t\in\{0,0.01,\ldots,1\}$ and
+$\alpha\in\{0,0.2,0.4,0.5,0.6,0.8,1\}$, with payoffs
+$(T,R,P,S)=(3,2,0,-1)$. For each fixed positive caution level, maximum Nash
+cooperation and the cooperation selected by the sampled replicator trajectories
+are nondecreasing in transparency. Both change from zero to one at the same
+sampled onset. For $\alpha=0.2,0.4,0.5,0.6,0.8,1$, respectively, the first
+cooperative grid points are $t=0.28,0.01,0.11,0.24,0.50,1$.
+At every cooperative point, all 1,000 sampled initial populations converge to
+full mutual cooperation; at every remaining point with $\alpha>0$, all converge
+to mutual defection. The maximum over symmetric equilibria equals the maximum
+over all equilibria throughout the grid. Full-defection equilibria nevertheless
+remain available at every positive caution level. Transparency therefore
+enables cooperative equilibria and favors their selection in these experiments,
+without eliminating defecting equilibria. At $\alpha=0$, cooperation is
+unconditional at every transparency level. The 707 parameter points represent
+62 distinct games, with the same 1,000 Dirichlet$(1)$ initial populations reused
+in each game. The observed cooperative basin of one has a pointwise 95\%
+Wilson interval $[0.9962,1]$; it is not a proof of global convergence.
+
+\paragraph{Caution and selection.}
+The transparency needed for cooperation depends nonmonotonically on caution.
+Among the positive caution settings tested, $\alpha=0.4$ has the lowest sampled
+onset, $t=0.01$, corresponding to approximately $0.03$ bits of information about
+the opponent. The previous sampled point, $t=0$, has only defecting equilibria.
+In contrast, $\alpha=1$ requires the full-transparency endpoint. Moreover, the
+equilibrium effect cannot be read from the raw rate of cooperation before
+selection. At $\alpha=0.2$, average initial cooperation falls from $57.65\%$ at
+$t=0$ to $32.84\%$ at $t=1$, while cooperation after selection rises from zero
+to one. All these comparisons are restricted to the sampled grid and the fixed
+program library; the plotted transition brackets do not locate exact
+continuous thresholds.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{01_transparency_and_cooperation.pdf}
+  \caption{Transparency enables and selects mutual cooperation in the
+  behavioral family. Left: maximum $\Pr[(C,C)]$ over the complete Nash set of
+  each induced game, obtained by exact enumeration. Right: observed fraction
+  of 1,000 uniformly sampled initial populations converging to full cooperation
+  under replicator dynamics. Each stroke represents one sampled transparency
+  value at the indicated caution level; circles mark the first cooperative
+  grid point. The two quantities agree at all 707 parameter points. The same
+  1,000 starts are reused across 62 distinct games. The pointwise 95\% Wilson
+  intervals for basins observed as one and zero are $[0.9962,1]$ and
+  $[0,0.0038]$, respectively. No interpolation across caution settings is
+  implied. At $\alpha=0$, every program cooperates unconditionally.}
+  \label{fig:behavioral-transparency-cooperation}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{02_equilibrium_landscape.pdf}
+  \caption{Nash possibilities and evolutionary selection at every tested
+  positive caution level. Teal shows the Nash cooperation level reached by all
+  sampled replicator runs; purple shows the other Nash cooperation levels.
+  Every connected Nash component in these games has constant cooperation, so
+  their union gives the complete Nash outcome set, including continua.
+  Mutual-defection equilibria persist even when the dynamics select full
+  cooperation. Shaded strips locate the interval between the last sampled
+  defecting point and the first sampled cooperative point; the grid resolution
+  is $0.01$. Lines guide the eye between observed values. At $\alpha=1$, the
+  cooperative endpoint is shown separately.}
+  \label{fig:behavioral-nash-landscape}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{03_transparency_thresholds.pdf}
+  \caption{The first cooperative transparency level is nonmonotone in caution.
+  Dots mark the first sampled $t$ with a fully cooperative Nash equilibrium
+  and 1,000/1,000 cooperative replicator outcomes; black ticks indicate the
+  preceding defecting grid point. The right axis converts the nominal
+  transparency to mutual information, $I(B;S)=t\log_2 8=3t$ bits, under the
+  uniform calibration prior. Among the tested positive caution values,
+  $\alpha=0.4$ requires the least sampled transparency, $t=0.01$, approximately
+  $0.03$ bits. Dots do not identify exact continuous thresholds, and no
+  interpolation between caution settings is assumed.}
+  \label{fig:behavioral-transparency-onset}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{04_cooperation_before_and_after_selection.pdf}
+  \caption{Cooperation before and after evolutionary selection. For each
+  game, gray shows the mean and interquartile range of $x^\top Cx$ over the
+  1,000 Dirichlet$(1)$ starting populations, where $C_{ij}$ indicates a
+  mutual-cooperation cell. Teal shows the mean at the converged endpoints,
+  which is either zero or one in every game. Gray bands describe variation
+  among starting populations, not confidence intervals. In particular,
+  cooperation before selection can fall with transparency even while
+  selected cooperation rises. The same starts are used in all games; lines
+  connect sampled values and the $\alpha=1$ endpoint is shown separately.}
+  \label{fig:behavioral-selection-amplification}
+\end{figure}

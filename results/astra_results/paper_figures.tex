@@ -1,0 +1,69 @@
+% Focus: increasing transparency and cooperation at equilibrium.
+% Requires graphicx; copy the two PDFs into the paper's graphics directory.
+
+\paragraph{Transparency promotes cooperation at equilibrium.}
+For the behavioral signal family, increasing transparency raises both the
+maximum cooperation attainable at Nash equilibrium and the cooperation
+selected by replicator dynamics. Holding the decision threshold fixed at each
+of its six tested positive values, both quantities rise from zero at opacity
+($t=0$) to one at full transparency ($t=1$), and neither decreases anywhere
+along the sampled grid. Across the 600 adjacent transparency comparisons,
+there are six increases and 594 unchanged comparisons, with no decreases.
+At each grid point, exact Nash enumeration and the sampled replicator outcomes
+agree: whenever a fully cooperative Nash equilibrium exists, all 1,000 sampled
+initial populations converge to full cooperation. The positive relationship
+therefore holds within every fixed experimental condition, as well as in the
+aggregate. The observed pattern consists of thresholds and plateaus rather
+than a strict increase at every transparency increment.
+
+The aggregate in Figure~\ref{fig:behavioral-transparency-cooperation} assigns
+fixed equal weights to the six tested positive decision thresholds; it is not
+an average over equilibria. The within-condition results in
+Figure~\ref{fig:behavioral-nash-landscape} establish that the nondecreasing
+relationship does not depend on this weighting. The degenerate $\alpha=0$
+condition, under which every lifted program cooperates unconditionally, is
+excluded from the aggregate. Including it preserves the relationship and
+changes mean cooperation at opacity from zero to $1/7$. Defecting Nash
+equilibria remain available at every transparency level when $\alpha>0$;
+the finding concerns attainable and evolutionarily selected cooperation.
+
+These results use the eight-program library on the floor side, payoffs
+$(T,R,P,S)=(3,2,0,-1)$, and $t\in\{0,0.01,\ldots,1\}$. The same 1,000
+Dirichlet$(1)$ initial populations are reused in each distinct game. The full
+707-point grid represents 62 distinct games and 62,000 stored trajectories.
+The per-game pointwise 95\% Wilson interval for a cooperative basin observed
+as 1,000/1,000 is $[0.9962,1]$; universal cooperation among sampled starts is
+not a proof of global convergence. Step lines between sampled transparencies
+are visual guides, not claims about exact continuous transition locations.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{01_transparency_and_cooperation.pdf}
+  \caption{More transparency supports greater cooperation at equilibrium in
+  the behavioral family. The dark curve shows maximum Nash cooperation,
+  averaged with fixed equal weights over the six tested positive decision
+  thresholds. Teal markers show mean cooperation at the equilibria selected
+  by replicator dynamics, using the same weights. The two quantities coincide
+  at all 101 sampled transparencies and rise from zero to one. Cooperation is
+  measured as $\Pr[(C,C)]$. The average is over experimental settings, not
+  equilibria; $\alpha=0$ is excluded because cooperation is unconditional
+  there. Minimum Nash cooperation remains zero. Steps guide the eye between
+  grid points separated by 0.01.}
+  \label{fig:behavioral-transparency-cooperation}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{02_equilibrium_landscape.pdf}
+  \caption{The positive transparency effect holds within each fixed
+  experimental condition. In each panel, transparency varies while caution
+  is fixed. The dark line gives maximum Nash cooperation and teal markers
+  give replicator-selected cooperation; both rise from zero to one and never
+  decrease. Purple points show the other Nash cooperation levels, including
+  persistent mutual-defection equilibria. Every Nash component here has
+  constant cooperation, so all possible Nash cooperation levels are represented.
+  There are no decreases across the 600 adjacent within-condition comparisons.
+  Lines connect sampled values; the full-transparency endpoint at $\alpha=1$
+  is shown separately.}
+  \label{fig:behavioral-nash-landscape}
+\end{figure}

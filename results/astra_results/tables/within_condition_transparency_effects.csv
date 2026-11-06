@@ -1,0 +1,13 @@
+alpha,metric,opaque,transparent,endpoint_gain,adjacent_increase,adjacent_unchanged,adjacent_decrease,pairwise_increase,pairwise_unchanged,pairwise_decrease
+0.2,nash_max,0,1,1,1,99,0,2044,3006,0
+0.2,selected_cooperation,0,1,1,1,99,0,2044,3006,0
+0.4,nash_max,0,1,1,1,99,0,100,4950,0
+0.4,selected_cooperation,0,1,1,1,99,0,100,4950,0
+0.5,nash_max,0,1,1,1,99,0,990,4060,0
+0.5,selected_cooperation,0,1,1,1,99,0,990,4060,0
+0.6,nash_max,0,1,1,1,99,0,1848,3202,0
+0.6,selected_cooperation,0,1,1,1,99,0,1848,3202,0
+0.8,nash_max,0,1,1,1,99,0,2550,2500,0
+0.8,selected_cooperation,0,1,1,1,99,0,2550,2500,0
+1,nash_max,0,1,1,1,99,0,100,4950,0
+1,selected_cooperation,0,1,1,1,99,0,100,4950,0

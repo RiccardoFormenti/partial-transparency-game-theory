@@ -1,0 +1,151 @@
+{
+  "family": "behavioral",
+  "n_points": 707,
+  "n_games": 62,
+  "alphas": [
+    0.0,
+    0.2,
+    0.4,
+    0.5,
+    0.6,
+    0.8,
+    1.0
+  ],
+  "nontrivial_alphas": [
+    0.2,
+    0.4,
+    0.5,
+    0.6,
+    0.8,
+    1.0
+  ],
+  "per_alpha": {
+    "0.0": {
+      "threshold_t": 0.0,
+      "partial_lowest_t": null,
+      "violations_nash_best": 0,
+      "violations_replicator": 0,
+      "violations_n_components": 0,
+      "violations_tournament": 0,
+      "tournament_coop_at_t1": 1.0,
+      "tournament_coop_range": [
+        1.0,
+        1.0
+      ],
+      "tournament_coop_at_threshold_minus": null
+    },
+    "0.2": {
+      "threshold_t": 0.28,
+      "partial_lowest_t": 0.72,
+      "violations_nash_best": 0,
+      "violations_replicator": 0,
+      "violations_n_components": 0,
+      "violations_tournament": 3888,
+      "tournament_coop_at_t1": 0.3125,
+      "tournament_coop_range": [
+        0.3125,
+        0.59375
+      ],
+      "tournament_coop_at_threshold_minus": 0.59375
+    },
+    "0.4": {
+      "threshold_t": 0.01,
+      "partial_lowest_t": 0.36,
+      "violations_nash_best": 0,
+      "violations_replicator": 0,
+      "violations_n_components": 0,
+      "violations_tournament": 2812,
+      "tournament_coop_at_t1": 0.3125,
+      "tournament_coop_range": [
+        0.3125,
+        0.46875
+      ],
+      "tournament_coop_at_threshold_minus": 0.390625
+    },
+    "0.5": {
+      "threshold_t": 0.11,
+      "partial_lowest_t": 0.28,
+      "violations_nash_best": 0,
+      "violations_replicator": 0,
+      "violations_n_components": 0,
+      "violations_tournament": 1173,
+      "tournament_coop_at_t1": 0.3125,
+      "tournament_coop_range": [
+        0.28125,
+        0.390625
+      ],
+      "tournament_coop_at_threshold_minus": 0.328125
+    },
+    "0.6": {
+      "threshold_t": 0.24,
+      "partial_lowest_t": 0.39,
+      "violations_nash_best": 0,
+      "violations_replicator": 0,
+      "violations_n_components": 0,
+      "violations_tournament": 268,
+      "tournament_coop_at_t1": 0.3125,
+      "tournament_coop_range": [
+        0.203125,
+        0.390625
+      ],
+      "tournament_coop_at_threshold_minus": 0.234375
+    },
+    "0.8": {
+      "threshold_t": 0.5,
+      "partial_lowest_t": 0.69,
+      "violations_nash_best": 0,
+      "violations_replicator": 0,
+      "violations_n_components": 0,
+      "violations_tournament": 0,
+      "tournament_coop_at_t1": 0.3125,
+      "tournament_coop_range": [
+        0.015625,
+        0.3125
+      ],
+      "tournament_coop_at_threshold_minus": 0.1875
+    },
+    "1.0": {
+      "threshold_t": 1.0,
+      "partial_lowest_t": 1.0,
+      "violations_nash_best": 0,
+      "violations_replicator": 0,
+      "violations_n_components": 0,
+      "violations_tournament": 0,
+      "tournament_coop_at_t1": 0.3125,
+      "tournament_coop_range": [
+        0.015625,
+        0.3125
+      ],
+      "tournament_coop_at_threshold_minus": 0.015625
+    }
+  },
+  "nash_replicator_agree": true,
+  "n_ordered_pairs_checked": 35350,
+  "total_violations_nash_best": 0,
+  "total_violations_replicator": 0,
+  "total_violations_n_components": 0,
+  "total_violations_tournament": 8141,
+  "share_cooperative_at": {
+    "1.0": 1.0,
+    "0.5": 0.8333333333333334,
+    "0.25": 0.5,
+    "0.0": 0.0
+  },
+  "mean_tournament_coop_at": {
+    "1.0": 0.3125,
+    "0.5": 0.2578125,
+    "0.25": 0.2682291666666667,
+    "0.0": 0.2942708333333333
+  },
+  "dupoc_window": {
+    "n_points": 606,
+    "n_predicted": 605,
+    "misses": [
+      {
+        "t": 0.5,
+        "alpha": 0.8,
+        "predicted_cooperation": false
+      }
+    ]
+  }
+}
